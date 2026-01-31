@@ -4,6 +4,8 @@ from app.database.database import engine
 from app.database.base import Base
 from app.core.config import PROJECT_NAME, PROJECT_DESCRIPTION, DEBUG
 
+from app.routes import auth, users
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # STARTUP
@@ -21,6 +23,9 @@ app = FastAPI(
     debug=DEBUG,
     lifespan=lifespan
 )
+
+app.include_router(auth.router)
+app.include_router(users.router)
 
 @app.get("/")
 async def root():
