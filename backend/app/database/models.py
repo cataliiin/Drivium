@@ -1,6 +1,6 @@
 import sqlalchemy as sa
 from app.database.base import Base
-from enum import Enum as PyEnum
+from enum import Enum as PyEnum # as pyenum to avoid conflict with sqlalchemy Enum
 
 class FileStatus(str, PyEnum):
     PENDING = "PENDING"

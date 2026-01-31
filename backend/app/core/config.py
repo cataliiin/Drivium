@@ -12,3 +12,5 @@ ALGORITHM = os.getenv("ALGORITHM", "HS256")
 PROJECT_NAME = os.getenv("PROJECT_NAME", "Drivium")
 PROJECT_DESCRIPTION = os.getenv("PROJECT_DESCRIPTION", "Google Drive clone")
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
+
+MAX_FILE_SIZE_BYTES = int(os.getenv("MAX_FILE_SIZE_BYTES", str(10 * 1024 * 1024 * 1024)))  # 10 GB default
