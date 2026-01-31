@@ -1,5 +1,10 @@
 import sqlalchemy as sa
 from app.database.base import Base
+from enum import Enum as PyEnum
+
+class FileStatus(str, PyEnum):
+    PENDING = "PENDING"
+    UPLOADED = "UPLOADED"
 
 class User(Base):
     __tablename__ = "user_account"
@@ -38,7 +43,7 @@ class File(Base):
     storage_key = sa.Column(sa.String(512), unique=True, nullable=False, index=True)
     size = sa.Column(sa.BigInteger, nullable=False, default=0)
     mime_type = sa.Column(sa.String(100), nullable=False, default="application/octet-stream")
-    status = sa.Column(sa.String(20), default="UPLOADING", index=True)
+    status = sa.Column(sa.Enum(FileStatus), default=FileStatus.PENDING, index=True)
     uploaded_at = sa.Column(sa.DateTime(timezone=True), server_default=sa.func.now())
     
     owner = sa.orm.relationship("User", back_populates="files")
