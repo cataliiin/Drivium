@@ -1,9 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from enum import Enum
 from typing import List
 from datetime import datetime
 from app.core.config import MAX_FILE_SIZE_BYTES, ALLOWED_MIME_TYPES
-from typing import Literal
 
 class FileStatus(str, Enum):
     PENDING = "PENDING"
@@ -17,8 +16,15 @@ class Breadcrumb(BaseModel):
 class FileUploadRequest(BaseModel):
     name: str = Field(..., max_length=255,pattern=r"^[a-zA-Z0-9_\-\.()]+$")
     size: int = Field(..., ge=0, le=MAX_FILE_SIZE_BYTES)
-    mime_type: Literal[tuple(ALLOWED_MIME_TYPES)]
+    mime_type: str = Field(..., max_length=255)
     folder_id: int | None = None
+
+    @field_validator('mime_type')
+    @classmethod
+    def check_mime_type(cls, v: str) -> str:
+        if v not in ALLOWED_MIME_TYPES:
+            raise ValueError(f"Invalid file type: {v}.")
+        return v
 
 class FileUploadResponse(BaseModel):
     file_id: int
