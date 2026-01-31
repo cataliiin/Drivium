@@ -18,6 +18,3 @@ def init_minio_client():
             logging.info(f"Bucket '{bucket}' created")
     
     return minio_client
-
-def get_minio():
-    return init_minio_client()
