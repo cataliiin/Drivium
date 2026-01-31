@@ -3,4 +3,6 @@ uvicorn[standard]
 sqlalchemy
 python-dotenv
 passlib[bcrypt]
+passlib[argon2]
 python-jose[cryptography]
+argon2-cffi

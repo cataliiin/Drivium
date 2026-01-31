@@ -1,12 +1,12 @@
 from passlib.context import CryptContext
 from jose import JWTError, jwt
-from datetime import datetime, timedelta
-from schemas.auth import TokenData
-from core.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from datetime import datetime, timedelta, timezone
+from app.schemas.auth import TokenData
+from app.core.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
 # Password Hashing
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2", "bcrypt"], default="argon2", deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -17,9 +17,9 @@ def get_password_hash(password: str) -> str:
 # JWT Token 
 def create_access_token(token_data: TokenData, expires_delta: timedelta | None = None) -> str:
     if expires_delta:
-        expire = datetime.now(datetime.timezone.utc) + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(datetime.timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode = token_data.model_dump()
     to_encode["exp"] = expire
