@@ -2,7 +2,8 @@ from pydantic import BaseModel, Field
 from enum import Enum
 from typing import List
 from datetime import datetime
-from app.core.config import MAX_FILE_SIZE_BYTES
+from app.core.config import MAX_FILE_SIZE_BYTES, ALLOWED_MIME_TYPES
+from typing import Literal
 
 class FileStatus(str, Enum):
     PENDING = "PENDING"
@@ -16,7 +17,7 @@ class Breadcrumb(BaseModel):
 class FileUploadRequest(BaseModel):
     name: str = Field(..., max_length=255,pattern=r"^[a-zA-Z0-9_\-\.()]+$")
     size: int = Field(..., ge=0, le=MAX_FILE_SIZE_BYTES)
-    mime_type: str = Field(..., max_length=100)
+    mime_type: Literal[tuple(ALLOWED_MIME_TYPES)]
     folder_id: int | None = None
 
 class FileUploadResponse(BaseModel):

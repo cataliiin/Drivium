@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from typing import List
 
 load_dotenv()
 
@@ -14,3 +15,43 @@ PROJECT_DESCRIPTION = os.getenv("PROJECT_DESCRIPTION", "Google Drive clone")
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
 
 MAX_FILE_SIZE_BYTES = int(os.getenv("MAX_FILE_SIZE_BYTES", str(10 * 1024 * 1024 * 1024)))  # 10 GB default
+
+ALLOWED_MIME_TYPES_DEFAULT = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png", 
+    "image/gif",
+    "image/webp",
+    "image/svg+xml",
+    "image/bmp",
+    "image/tiff",
+
+    "application/pdf",
+    "text/plain",
+    "text/csv",
+    "text/markdown",
+
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # .docx
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",       # .xlsx
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation", # .pptx
+    "application/msword",           # .doc
+    "application/vnd.ms-excel",     # .xls
+    "application/vnd.ms-powerpoint",# .ppt
+    "application/vnd.oasis.opendocument.text",      # .odt
+    "application/vnd.oasis.opendocument.spreadsheet", # .ods
+    "application/vnd.oasis.opendocument.presentation", # .odp
+
+    "application/zip",
+    "application/x-zip-compressed",
+    "application/gzip",
+    
+    "audio/mpeg",
+    "audio/wav",
+    "audio/ogg",
+    
+    "video/mp4",
+    "video/webm",
+    "video/ogg",
+]
+
+ALLOWED_MIME_TYPES: List[str] = os.getenv("ALLOWED_MIME_TYPES", ",".join(ALLOWED_MIME_TYPES_DEFAULT)).split(",")
