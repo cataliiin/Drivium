@@ -61,3 +61,6 @@ MINIO_USER = os.getenv("MINIO_USER", "minioadmin")
 MINIO_PASS = os.getenv("MINIO_PASS", "minioadmin")
 MINIO_BUCKET_NAME = os.getenv("MINIO_BUCKET_NAME", "drivium")
 MINIO_SECURE = os.getenv("MINIO_SECURE", "false").lower() == "false"
+
+PRESIGNED_UPLOAD_URL_EXPIRES_MINUTES: int = 60
+PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES: int = 60

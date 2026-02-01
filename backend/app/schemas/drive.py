@@ -29,7 +29,6 @@ class FileUploadRequest(BaseModel):
 class FileUploadResponse(BaseModel):
     file_id: int
     presigned_url: str
-    status: FileStatus = FileStatus.PENDING
 
 class FileResponse(BaseModel):
     id: int
