@@ -158,6 +158,82 @@ class DriveService:
             db.rollback()
             raise HTTPException(500, "Failed to create folder")
 
+    def delete_folder(self, folder_id: int, db: Session, minio: Minio, current_user: User) -> None:
+        try:
+            folder = db.query(Folder).filter(
+                Folder.id == folder_id,
+            ).first()
+
+            if not folder:
+                raise HTTPException(404, "Folder not found")
+            
+            if folder.owner_id != current_user.id:
+                raise HTTPException(403, "Not authorized for this folder")
+            
+            all_files = self._get_all_files_in_folder(db, folder_id, current_user.id)
+            for file in all_files:
+                object_name = f"users/{current_user.id}/{file.storage_key}"
+                minio.remove_object(self.BUCKET_NAME, object_name)
+            
+        except S3Error:
+            raise HTTPException(503, "Object storage unavailable")
+        except Exception:
+            raise HTTPException(500, "Failed to delete files from object storage")
+        
+        self._delete_folder_from_database(db, folder_id)
+
+    def _get_all_files_in_folder(self, db: Session, folder_id: int, user_id: int) -> List[File]:
+        files = []
+        
+        files.extend(db.query(File).filter(
+            File.folder_id == folder_id,
+            File.owner_id == user_id
+        ).all())
+        
+        subfolders = db.query(Folder).filter(
+            Folder.parent_folder_id == folder_id,
+            Folder.owner_id == user_id
+        ).all()
+        
+        for subfolder in subfolders:
+            files.extend(self._get_all_files_in_folder(db, subfolder.id, user_id))
+        
+        return files
+
+    def _get_all_subfolders(self, db: Session, folder_id: int, user_id: int) -> List[Folder]:
+        subfolders = []
+        
+        direct = db.query(Folder).filter(
+            Folder.parent_folder_id == folder_id,
+            Folder.owner_id == user_id
+        ).all()
+        
+        for folder in direct:
+            subfolders.append(folder)
+            subfolders.extend(self._get_all_subfolders(db, folder.id, user_id))
+        
+        return subfolders
+
+    def _delete_folder_from_database(self, db: Session, folder_id: int):
+        try:
+            subfolders = db.query(Folder).filter(Folder.parent_folder_id == folder_id).all()
+            
+            for subfolder in subfolders:
+                self._delete_folder_recursive_from_database(db, subfolder.id)
+            
+            files = db.query(File).filter(File.folder_id == folder_id).all()
+            for file in files:
+                db.delete(file)
+            
+            folder = db.query(Folder).filter(Folder.id == folder_id).first()
+            if folder:
+                db.delete(folder)
+            
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise HTTPException(500, "Failed to delete folder from database")
+
     def _build_breadcrumbs(self, db: Session, current_user: User, folder_id: int | None = None) -> List[Breadcrumb]:
         breadcrumbs = [{"id": None, "name": "Root"}]
         
