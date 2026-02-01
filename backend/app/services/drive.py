@@ -1,7 +1,7 @@
 from ast import List
 import uuid
 from sqlalchemy.orm import Session
-from app.schemas.drive import Breadcrumb, FileResponse, FileUploadRequest, FileUploadResponse, FileStatus, FolderCreateRequest, FolderCreateResponse, FolderContentResponse, FolderResponse, UploadStatusRequest, UploadStatusResponse
+from app.schemas.drive import Breadcrumb, FileMoveRequest, FileRenameRequest, FileResponse, FileUploadRequest, FileUploadResponse, FileStatus, FolderCreateRequest, FolderCreateResponse, FolderContentResponse, FolderMoveRequest, FolderRenameRequest, FolderResponse, UploadStatusRequest, UploadStatusResponse
 from app.core.config import MINIO_BUCKET_NAME, PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES, PRESIGNED_UPLOAD_URL_EXPIRES_MINUTES
 from app.database.models import File, Folder, User
 from fastapi import HTTPException
@@ -133,6 +133,55 @@ class DriveService:
             db.rollback()
             raise HTTPException(500, "Failed to delete file")
 
+    def file_rename(self, rename_data: FileRenameRequest, db: Session, current_user: User) -> None:
+        file = db.query(File).filter(
+            File.id == rename_data.file_id,
+        ).first()
+
+        if not file:
+            raise HTTPException(404, "File not found")
+        
+        if file.owner_id != current_user.id:
+            raise HTTPException(403, "Not authorized for this file")
+        
+        file.name = rename_data.new_name
+        
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise HTTPException(500, "Failed to rename file")
+
+    def move_file(self, move_data: FileMoveRequest, db: Session, current_user: User) -> None:
+        file = db.query(File).filter(
+            File.id == move_data.file_id,
+        ).first()
+
+        if not file:
+            raise HTTPException(404, "File not found")
+        
+        if file.owner_id != current_user.id:
+            raise HTTPException(403, "Not authorized for this file")
+        
+        if move_data.new_folder_id:
+            new_folder = db.query(Folder).filter(
+                Folder.id == move_data.new_folder_id,
+            ).first()
+            
+            if not new_folder:
+                raise HTTPException(404, "New folder not found")
+            
+            if new_folder.owner_id != current_user.id:
+                raise HTTPException(403, "Not authorized for new folder")
+        
+        file.folder_id = move_data.new_folder_id
+        
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise HTTPException(500, "Failed to move file")
+
     def create_folder(self, folder_data: FolderCreateRequest, db: Session, current_user: User) -> FolderCreateResponse:
         if folder_data.parent_folder_id:
             parent_folder = db.query(Folder).filter(Folder.id == folder_data.parent_folder_id).first()
@@ -182,7 +231,56 @@ class DriveService:
         
         self._delete_folder_from_database(db, folder_id)
 
-    def _get_all_files_in_folder(self, db: Session, folder_id: int, user_id: int) -> List[File]:
+    def rename_folder(self, rename_data: FolderRenameRequest, db: Session, current_user: User) -> None:
+        folder = db.query(Folder).filter(
+            Folder.id == rename_data.folder_id,
+        ).first()
+
+        if not folder:
+            raise HTTPException(404, "Folder not found")
+        
+        if folder.owner_id != current_user.id:
+            raise HTTPException(403, "Not authorized for this folder")
+        
+        folder.name = rename_data.new_name
+        
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise HTTPException(500, "Failed to rename folder")
+
+    def move_folder(self, move_data: FolderMoveRequest, db: Session, current_user: User) -> None:
+        folder = db.query(Folder).filter(
+            Folder.id == move_data.folder_id,
+        ).first()
+
+        if not folder:
+            raise HTTPException(404, "Folder not found")
+        
+        if folder.owner_id != current_user.id:
+            raise HTTPException(403, "Not authorized for this folder")
+        
+        if move_data.new_parent_folder_id:
+            new_parent = db.query(Folder).filter(
+                Folder.id == move_data.new_parent_folder_id,
+            ).first()
+            
+            if not new_parent:
+                raise HTTPException(404, "New parent folder not found")
+            
+            if new_parent.owner_id != current_user.id:
+                raise HTTPException(403, "Not authorized for new parent folder")
+        
+        folder.parent_folder_id = move_data.new_parent_folder_id
+        
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise HTTPException(500, "Failed to move folder")
+
+    def _get_all_files_in_folder_recursive(self, db: Session, folder_id: int, user_id: int) -> List[File]:
         files = []
         
         files.extend(db.query(File).filter(
@@ -196,7 +294,7 @@ class DriveService:
         ).all()
         
         for subfolder in subfolders:
-            files.extend(self._get_all_files_in_folder(db, subfolder.id, user_id))
+            files.extend(self._get_all_files_in_folder_recursive(db, subfolder.id, user_id))
         
         return files
 
@@ -219,7 +317,7 @@ class DriveService:
             subfolders = db.query(Folder).filter(Folder.parent_folder_id == folder_id).all()
             
             for subfolder in subfolders:
-                self._delete_folder_recursive_from_database(db, subfolder.id)
+                self._delete_folder_from_database(db, subfolder.id)
             
             files = db.query(File).filter(File.folder_id == folder_id).all()
             for file in files:
@@ -312,8 +410,4 @@ class DriveService:
             files=file_responses
         )
 
-
-
-_drive_service = DriveService()\
-
-
+_drive_service = DriveService()

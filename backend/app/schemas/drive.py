@@ -38,6 +38,14 @@ class FileResponse(BaseModel):
     uploaded_at: datetime | None = None
     folder_id: int | None = None
 
+class FileRenameRequest(BaseModel):
+    file_id: int = Field(..., gt=0)
+    new_name: str = Field(..., max_length=255,pattern=r"^[a-zA-Z0-9_\-\.()]+$")
+
+class FileMoveRequest(BaseModel):
+    file_id: int = Field(..., gt=0)
+    new_folder_id: int | None = None
+
 # FOLDER
 class FolderCreateRequest(BaseModel):
     name: str = Field(..., max_length=255,pattern=r"^[a-zA-Z0-9_\-\.()]+$")
@@ -52,6 +60,16 @@ class FolderResponse(BaseModel):
     name: str
     parent_folder_id: int | None = None
     created_at: datetime
+
+class FolderRenameRequest(BaseModel):
+    folder_id: int = Field(..., gt=0)
+    new_name: str = Field(..., max_length=255,pattern=r"^[a-zA-Z0-9_\-\.()]+$")
+
+class FolderMoveRequest(BaseModel):
+    folder_id: int = Field(..., gt=0)
+    new_parent_folder_id: int | None = None
+
+# STATUS
 
 class UploadStatusRequest(BaseModel):
     file_id: int = Field(..., gt=0)
