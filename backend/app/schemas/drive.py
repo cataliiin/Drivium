@@ -52,8 +52,6 @@ class FolderResponse(BaseModel):
     name: str
     parent_folder_id: int | None = None
     created_at: datetime
-    file_count: int = 0
-    subfolder_count: int = 0
 
 class UploadStatusRequest(BaseModel):
     file_id: int = Field(..., gt=0)
