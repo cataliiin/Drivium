@@ -1,7 +1,8 @@
-from ast import List
+import logging
+from typing import List
 import uuid
 from sqlalchemy.orm import Session
-from app.schemas.drive import Breadcrumb, FileMoveRequest, FileRenameRequest, FileResponse, FileUploadRequest, FileUploadResponse, FileStatus, FolderCreateRequest, FolderCreateResponse, FolderContentResponse, FolderMoveRequest, FolderRenameRequest, FolderResponse, UploadStatusRequest, UploadStatusResponse
+from app.schemas.drive import Breadcrumb, FileMoveRequest, FileRenameRequest, FileResponse, FileUploadRequest, FileUploadResponse, FileStatus, FolderCreateRequest, FolderCreateResponse, FolderContentResponse, FolderMoveRequest, FolderRenameRequest, FolderResponse, UploadStatusRequest
 from app.core.config import MINIO_BUCKET_NAME, PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES, PRESIGNED_UPLOAD_URL_EXPIRES_MINUTES
 from app.database.models import File, Folder, User
 from fastapi import HTTPException
@@ -54,7 +55,8 @@ class DriveService:
                 presigned_url=presigned_url
             )
             
-        except S3Error:
+        except S3Error as e:
+            logging.error(f"S3Error details: code={e.code}, message='{e.message}', bucket={self.BUCKET_NAME}, object={object_name}")
             db.rollback()
             raise HTTPException(503, "Object storage unavailable")
         except Exception as e:
@@ -377,7 +379,7 @@ class DriveService:
         files = db.query(File).filter(
             File.owner_id == current_user.id,
             File.folder_id == folder_id
-        ).order_by(File.uploaded_at.desc(nullsfirst=True), File.id.desc()).all()
+        ).order_by(File.uploaded_at.desc(), File.id.desc()).all()
 
         breadcrumbs = self._build_breadcrumbs(db, current_user, folder_id)
 
