@@ -1,12 +1,13 @@
+from ast import List
 import uuid
 from sqlalchemy.orm import Session
-from app.schemas.drive import FileUploadRequest, FileUploadResponse, FileStatus, FolderCreateRequest, FolderCreateResponse
+from app.schemas.drive import Breadcrumb, FileResponse, FileUploadRequest, FileUploadResponse, FileStatus, FolderCreateRequest, FolderCreateResponse, FolderContentResponse, FolderResponse, UploadStatusRequest, UploadStatusResponse
 from app.core.config import MINIO_BUCKET_NAME, PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES, PRESIGNED_UPLOAD_URL_EXPIRES_MINUTES
 from app.database.models import File, Folder, User
 from fastapi import HTTPException
 from minio import Minio
 from minio.error import S3Error
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 class DriveService:
     def __init__(self):
@@ -60,6 +61,29 @@ class DriveService:
             db.rollback()
             raise HTTPException(500, f"Failed to generate upload URL: {str(e)}")
         
+    def update_upload_status(self, status_data: UploadStatusRequest, db: Session, current_user: User) -> None:
+        try:
+            file = db.query(File).filter(
+                File.id == status_data.file_id, 
+            ).first()
+
+            if not file:
+                raise HTTPException(404, "File not found")
+            
+            if file.owner_id != current_user.id:
+                raise HTTPException(403, "Not authorized for this file")
+            
+            if status_data.success:
+                file.status = FileStatus.UPLOADED
+                file.uploaded_at = datetime.now(timezone.utc)
+            else:
+                db.delete(file)
+
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise HTTPException(500, "Failed to update upload status")
+
     def get_download_url(self, file_id: int, db: Session, minio: Minio, current_user: User) -> str:    
         
         file = db.query(File).filter(
@@ -84,7 +108,31 @@ class DriveService:
             raise HTTPException(503, "Object storage unavailable")
         except Exception as e:
             raise HTTPException(500, f"Failed to generate download URL: {str(e)}")
+    
+    def delete_file(self, file_id: int, db: Session, minio: Minio, current_user: User) -> None:
+        try:
+            file = db.query(File).filter(
+                File.id == file_id, 
+            ).first()
+
+            if not file:
+                raise HTTPException(404, "File not found")
             
+            if file.owner_id != current_user.id:
+                raise HTTPException(403, "Not authorized for this file")
+            
+            object_name = f"users/{current_user.id}/{file.storage_key}"
+            minio.remove_object(self.BUCKET_NAME, object_name)
+            
+            db.delete(file)
+            db.commit()
+        except S3Error:
+            db.rollback()
+            raise HTTPException(503, "Object storage unavailable")
+        except Exception:
+            db.rollback()
+            raise HTTPException(500, "Failed to delete file")
+
     def create_folder(self, folder_data: FolderCreateRequest, db: Session, current_user: User) -> FolderCreateResponse:
         if folder_data.parent_folder_id:
             parent_folder = db.query(Folder).filter(Folder.id == folder_data.parent_folder_id).first()
@@ -110,4 +158,86 @@ class DriveService:
             db.rollback()
             raise HTTPException(500, "Failed to create folder")
 
-_drive_service = DriveService()
+    def _build_breadcrumbs(self, db: Session, current_user: User, folder_id: int | None = None) -> List[Breadcrumb]:
+        breadcrumbs = [{"id": None, "name": "Root"}]
+        
+        if folder_id is None:
+            return [Breadcrumb(**b) for b in breadcrumbs]
+        
+        current = folder_id
+        path_stack = []
+        while current:
+            folder = db.query(Folder).filter(
+                Folder.id == current,
+                Folder.owner_id == current_user.id
+            ).first()
+            
+            if not folder:
+                break
+                
+            path_stack.append({"id": folder.id, "name": folder.name})
+            current = folder.parent_folder_id
+        
+        breadcrumbs.extend(reversed(path_stack))
+        
+        return [Breadcrumb(**b) for b in breadcrumbs]
+
+    def get_folder_content(self, db: Session, current_user: User, folder_id: int | None = None) -> FolderContentResponse:
+        current_folder = None
+        if folder_id is not None:
+            current_folder = db.query(Folder).filter(
+                Folder.id == folder_id,
+            ).first()
+            
+            if not current_folder:
+                raise HTTPException(404, "Folder not found or access denied")
+
+        if current_folder and current_folder.owner_id != current_user.id:
+            raise HTTPException(403, "Not authorized for this folder")
+
+        subfolders = db.query(Folder).filter(
+            Folder.owner_id == current_user.id,
+            Folder.parent_folder_id == folder_id
+        ).order_by(Folder.name.asc()).all()
+
+        files = db.query(File).filter(
+            File.owner_id == current_user.id,
+            File.folder_id == folder_id
+        ).order_by(File.uploaded_at.desc(nullsfirst=True), File.id.desc()).all()
+
+        breadcrumbs = self._build_breadcrumbs(db, current_user, folder_id)
+
+        folder_responses = [
+            FolderResponse(
+                id=f.id,
+                name=f.name,
+                parent_folder_id=f.parent_folder_id,
+                created_at=f.created_at,
+            )
+            for f in subfolders
+        ]
+
+        file_responses = [
+            FileResponse(
+                id=f.id,
+                name=f.name,
+                size=f.size,
+                status=f.status,
+                uploaded_at=f.uploaded_at,
+                folder_id=f.folder_id
+            )
+            for f in files
+        ]
+
+        return FolderContentResponse(
+            folder_id=folder_id,
+            path=breadcrumbs,
+            folders=folder_responses,
+            files=file_responses
+        )
+
+
+
+_drive_service = DriveService()\
+
+
