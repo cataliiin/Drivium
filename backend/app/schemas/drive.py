@@ -57,9 +57,6 @@ class UploadStatusRequest(BaseModel):
     file_id: int = Field(..., gt=0)
     success: bool
 
-class UploadStatusResponse(BaseModel):
-    success: bool
-
 # returns the contents of a folder and a way to navigate back
 class FolderContentResponse(BaseModel):
     folder_id: int | None = None
