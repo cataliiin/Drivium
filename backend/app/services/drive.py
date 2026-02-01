@@ -109,3 +109,5 @@ class DriveService:
         except Exception:
             db.rollback()
             raise HTTPException(500, "Failed to create folder")
+
+_drive_service = DriveService()

@@ -23,4 +23,4 @@ class UserService:
 
         return UserResponse.model_validate(db_user)
 
-user_service = UserService()
+_user_service = UserService()
