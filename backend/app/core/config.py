@@ -57,8 +57,8 @@ ALLOWED_MIME_TYPES_DEFAULT = [
 ALLOWED_MIME_TYPES: List[str] = os.getenv("ALLOWED_MIME_TYPES", ",".join(ALLOWED_MIME_TYPES_DEFAULT)).split(",")
 
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
-MINIO_USER = os.getenv("MINIO_USER", "minioadmin")
-MINIO_PASS = os.getenv("MINIO_PASS", "minioadmin")
+MINIO_USER = os.getenv("MINIO_USER", "admin")
+MINIO_PASS = os.getenv("MINIO_PASS", "supersecret123")
 MINIO_BUCKET_NAME = os.getenv("MINIO_BUCKET_NAME", "drivium")
 MINIO_SECURE = os.getenv("MINIO_SECURE", "false").lower() == "false"
 
