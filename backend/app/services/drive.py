@@ -78,10 +78,13 @@ class DriveService:
             if status_data.success:
                 file.status = FileStatus.UPLOADED
                 file.uploaded_at = datetime.now(timezone.utc)
+                db.commit()
             else:
                 db.delete(file)
-
-            db.commit()
+                db.commit()
+        except HTTPException:
+            db.rollback()
+            raise
         except Exception:
             db.rollback()
             raise HTTPException(500, "Failed to update upload status")
@@ -112,28 +115,30 @@ class DriveService:
             raise HTTPException(500, f"Failed to generate download URL: {str(e)}")
     
     def delete_file(self, file_id: int, db: Session, minio: Minio, current_user: User) -> None:
-        try:
-            file = db.query(File).filter(
-                File.id == file_id, 
-            ).first()
+        file = db.query(File).filter(
+            File.id == file_id, 
+        ).first()
 
-            if not file:
-                raise HTTPException(404, "File not found")
-            
-            if file.owner_id != current_user.id:
-                raise HTTPException(403, "Not authorized for this file")
-            
-            object_name = f"users/{current_user.id}/{file.storage_key}"
+        if not file:
+            raise HTTPException(404, "File not found")
+        
+        if file.owner_id != current_user.id:
+            raise HTTPException(403, "Not authorized for this file")
+        
+        object_name = f"users/{current_user.id}/{file.storage_key}"
+        
+        try:
             minio.remove_object(self.BUCKET_NAME, object_name)
-            
+        except S3Error:
+            raise HTTPException(503, "Object storage unavailable")
+        except Exception as e:
+            raise HTTPException(500, f"Failed to delete file from storage: {str(e)}")
+        
+        try:
             db.delete(file)
             db.commit()
-        except S3Error:
-            db.rollback()
-            raise HTTPException(503, "Object storage unavailable")
-        except Exception:
-            db.rollback()
-            raise HTTPException(500, "Failed to delete file")
+        except Exception as e:
+            raise HTTPException(500, f"Failed to delete file record: {str(e)}")
 
     def edit_file(self, file_id: int, edit: FileEditRequest, db: Session, current_user: User) -> File:
         update = edit.model_dump(exclude_unset=True)
@@ -197,26 +202,29 @@ class DriveService:
             raise HTTPException(500, "Failed to create folder")
 
     def delete_folder(self, folder_id: int, db: Session, minio: Minio, current_user: User) -> None:
-        try:
-            folder = db.query(Folder).filter(
-                Folder.id == folder_id,
-            ).first()
+        folder = db.query(Folder).filter(
+            Folder.id == folder_id,
+        ).first()
 
-            if not folder:
-                raise HTTPException(404, "Folder not found")
-            
-            if folder.owner_id != current_user.id:
-                raise HTTPException(403, "Not authorized for this folder")
-            
-            all_files = self._get_all_files_in_folder_recursive(db, folder_id, current_user.id)
+        if not folder:
+            raise HTTPException(404, "Folder not found")
+        
+        if folder.owner_id != current_user.id:
+            raise HTTPException(403, "Not authorized for this folder")
+        
+        all_files = self._get_all_files_in_folder_recursive(db, folder_id, current_user.id)
+        
+        try:
             for file in all_files:
                 object_name = f"users/{current_user.id}/{file.storage_key}"
-                minio.remove_object(self.BUCKET_NAME, object_name)
-            
-        except S3Error:
-            raise HTTPException(503, "Object storage unavailable")
-        except Exception:
-            raise HTTPException(500, "Failed to delete files from object storage")
+                try:
+                    minio.remove_object(self.BUCKET_NAME, object_name)
+                except S3Error:
+                    raise HTTPException(503, "Object storage unavailable")
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(500, f"Failed to delete files from object storage: {str(e)}")
         
         self._delete_folder_from_database(db, folder_id)
 
@@ -318,14 +326,20 @@ class DriveService:
         
         current = folder_id
         path_stack = []
+        visited = set()
+        
         while current:
+            if current in visited:
+                raise HTTPException(500, "Circular folder reference detected")
+            visited.add(current)
+            
             folder = db.query(Folder).filter(
                 Folder.id == current,
                 Folder.owner_id == current_user.id
             ).first()
             
             if not folder:
-                break
+                raise HTTPException(404, "Folder not found or access denied")
                 
             path_stack.append({"id": folder.id, "name": folder.name})
             current = folder.parent_folder_id
