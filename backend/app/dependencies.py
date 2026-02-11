@@ -4,9 +4,8 @@ from minio import Minio
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from jose import JWTError, jwt
+from app.core.security import verify_token
 from app.database.models import User
-from app.core.config import SECRET_KEY, ALGORITHM
 from app.services.user import _user_service
 from app.services.auth import _auth_service
 from app.services.drive import _drive_service
@@ -32,21 +31,11 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         headers={"WWW-Authenticate": "Bearer"},
     )
     
-    try:
-        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("user_id")
-        if user_id is None:
-            raise credentials_exception
-        
-        try:
-            user_id_int = int(user_id)
-        except (ValueError, TypeError):
-            raise credentials_exception
-        
-    except JWTError:
+    token_data = verify_token(credentials.credentials)
+    if token_data is None or token_data.user_id is None:
         raise credentials_exception
     
-    user = db.query(User).filter(User.id == user_id_int).first()
+    user = db.query(User).filter(User.id == token_data.user_id).first()
     if user is None:
         raise credentials_exception
     
