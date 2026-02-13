@@ -63,7 +63,7 @@ class DriveService:
             db.rollback()
             raise HTTPException(500, f"Failed to generate upload URL: {str(e)}")
         
-    def update_upload_status(self,file_id: int, status_data: UploadStatusRequest, db: Session, current_user: User) -> None:
+    def update_upload_status(self,file_id: int, status_data: UploadStatusRequest, db: Session, current_user: User) -> FileResponse | None:
         try:
             file = db.query(File).filter(
                 File.id == file_id, 
@@ -75,13 +75,25 @@ class DriveService:
             if file.owner_id != current_user.id:
                 raise HTTPException(403, "Not authorized for this file")
             
+            if file.status != FileStatus.PENDING:
+                raise HTTPException(400, "File upload status cannot be updated from current state")
+
             if status_data.success:
                 file.status = FileStatus.UPLOADED
                 file.uploaded_at = datetime.now(timezone.utc)
                 db.commit()
+                return FileResponse(
+                    id=file.id,
+                    name=file.name,
+                    size=file.size,
+                    status=file.status,
+                    uploaded_at=file.uploaded_at,
+                    folder_id=file.folder_id
+                )
             else:
                 db.delete(file)
                 db.commit()
+                return None
         except HTTPException:
             db.rollback()
             raise

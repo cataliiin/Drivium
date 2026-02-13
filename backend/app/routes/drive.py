@@ -20,15 +20,14 @@ async def request_file_upload(file: FileUploadRequest,
     return drive_service.get_upload_url(file, db, minio, current_user)
 
 # Frontend calls this after successful upload to minio - > the status of the file changes to UPLOADED
-@router.patch("/files/{file_id}/upload-confirm")
+@router.patch("/files/{file_id}/upload-confirm", response_model=FileResponse | None)
 async def confirm_file_upload( file_id: int,
                                file_data: UploadStatusRequest,
                                db: Session = Depends(get_db), 
                                drive_service = Depends(get_drive_service), 
                                current_user = Depends(get_current_user)):
     
-    drive_service.update_upload_status(file_id, file_data, db, current_user)
-    return {"message": "File upload confirmed."}
+    return drive_service.update_upload_status(file_id, file_data, db, current_user)
 
 # Generate presigned URL for file download
 @router.get("/files/{file_id}/download-url", response_model=FileDownloadResponse)
