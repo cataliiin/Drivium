@@ -2,9 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from enum import Enum
 from typing import List, Optional
 from datetime import datetime
-from app.core.config import MAX_FILE_SIZE_BYTES, ALLOWED_MIME_TYPES
-
-FILENAME_PATTERN = r"^[a-zA-Z0-9_\-\.()]+$"
+from app.core.config import MAX_FILE_SIZE_BYTES, ALLOWED_MIME_TYPES, FILENAME_PATTERN
 
 class FileStatus(str, Enum):
     PENDING = "PENDING"
