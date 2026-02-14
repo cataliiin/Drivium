@@ -147,3 +147,5 @@ cython_debug/
 drivium.db
 
 test_all_endpoints.py
+
+.notes

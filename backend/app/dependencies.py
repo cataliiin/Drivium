@@ -35,7 +35,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     if token_data is None or token_data.user_id is None:
         raise credentials_exception
     
-    user = db.query(User).filter(User.id == token_data.user_id).first()
+    user = _user_service.get_user(token_data.user_id, db)
     if user is None:
         raise credentials_exception
     

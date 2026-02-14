@@ -5,6 +5,9 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 class UserService:
+    def get_user(self, user_id: int, db: Session) -> User | None:
+        return db.query(User).filter(User.id == user_id).first()
+
     def create_user(self, user_data: UserCreate, db: Session) -> User:
         if db.query(User).filter(User.email == user_data.email).first():
             raise HTTPException(status_code=400, detail="Email already registered")
