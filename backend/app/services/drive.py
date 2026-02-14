@@ -214,6 +214,7 @@ class DriveService:
             raise HTTPException(500, "Failed to create folder")
 
     def delete_folder(self, folder_id: int, db: Session, minio: Minio, current_user: User) -> None:
+        # might be problematic, revisit
         folder = db.query(Folder).filter(
             Folder.id == folder_id,
         ).first()

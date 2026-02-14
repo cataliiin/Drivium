@@ -94,9 +94,17 @@ async def edit_folder(folder_id: int,
     
     return drive_service.edit_folder(folder_id, request, db, current_user)
 
-# List contents of a folder
+# List contents of root folder
 @router.get("/folders/contents", response_model=FolderContentResponse)
-async def list_folder_contents(folder_id: int | None = None,
+async def list_root_folder_contents(db: Session = Depends(get_db), 
+                                    drive_service = Depends(get_drive_service), 
+                                    current_user = Depends(get_current_user)):
+    
+    return drive_service.get_folder_content(db, current_user, None)
+
+# List contents of a folder by id
+@router.get("/folders/contents/{folder_id}", response_model=FolderContentResponse)
+async def list_folder_contents(folder_id: int,
                                db: Session = Depends(get_db), 
                                drive_service = Depends(get_drive_service), 
                                current_user = Depends(get_current_user)):
