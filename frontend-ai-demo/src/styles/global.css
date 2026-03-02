@@ -1,0 +1,41 @@
+:root {
+    --bs-primary: #1e8a53;
+    --bs-primary-rgb: 30, 138, 83;
+}
+
+html,
+body,
+#root {
+    min-height: 100%;
+}
+
+body {
+    background-color: #f8fafc;
+}
+
+.drivium-shell {
+    max-width: 1200px;
+}
+
+.drivium-card {
+    border: 1px solid #e9ecef;
+}
+
+.drivium-sidebar-sticky {
+    position: sticky;
+    top: 1rem;
+}
+
+.drive-list-scroll {
+    max-height: calc(100vh - 260px);
+}
+
+@media (max-width: 991.98px) {
+    .drivium-sidebar-sticky {
+        position: static;
+    }
+
+    .drive-list-scroll {
+        max-height: none;
+    }
+}
