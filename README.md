@@ -9,6 +9,7 @@ A cloud drive application for managing files and folders.
 DigitalOcean Droplet + Docker + Nginx reverse proxy.
 - Demo live: http://134.209.255.19/
 - FastAPI Documentation: http://134.209.255.19/docs
+
 If the demo doesn’t load, check that the URL uses http, not https.
 ## Frontend status
 
