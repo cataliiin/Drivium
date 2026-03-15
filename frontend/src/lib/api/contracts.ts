@@ -1,0 +1,21 @@
+import type { components } from '$lib/api/openapi-generated-schema';
+
+export type Breadcrumb = components['schemas']['Breadcrumb'];
+export type Token = components['schemas']['Token'];
+export type UserLogin = components['schemas']['UserLogin'];
+export type UserCreate = components['schemas']['UserCreate'];
+export type UserResponse = components['schemas']['UserResponse'];
+export type FileStatus = components['schemas']['FileStatus'];
+export type FileResponse = components['schemas']['FileResponse'];
+export type FileUploadRequest = components['schemas']['FileUploadRequest'];
+export type FileUploadResponse = components['schemas']['FileUploadResponse'];
+export type FileEditRequest = components['schemas']['FileEditRequest'];
+export type FileDownloadResponse = components['schemas']['FileDownloadResponse'];
+export type UploadStatusRequest = components['schemas']['UploadStatusRequest'];
+export type FolderCreateRequest = components['schemas']['FolderCreateRequest'];
+export type FolderCreateResponse = components['schemas']['FolderCreateResponse'];
+export type FolderEditRequest = components['schemas']['FolderEditRequest'];
+export type FolderResponse = components['schemas']['FolderResponse'];
+export type FolderContentResponse = components['schemas']['FolderContentResponse'];
+export type ValidationError = components['schemas']['ValidationError'];
+export type HTTPValidationError = components['schemas']['HTTPValidationError'];
