@@ -12,21 +12,23 @@ export const actions: Actions = {
 			return fail(400, {message: 'Username and password required', invalid: true });
 		}
 
+		let access_token: string;
+
 		try {
 			const response = await login({ username, password });
-			const { access_token } = response;
-
-			cookies.set('jwt', access_token, {
-				path: '/',
-				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'strict',
-				maxAge: 60 * 60 * 24 * 7
-			});
-
-			throw redirect(302, '/drive');
+			access_token = response.access_token;
 		} catch (error) {
 			return fail(401, {message: 'Invalid credentials', credentials: true });
 		}
+
+		cookies.set('access_token', access_token, {
+			path: '/',
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'strict',
+			maxAge: 60 * 60 * 24 * 7
+		});
+
+		throw redirect(302, '/drive');
 	}
 };
