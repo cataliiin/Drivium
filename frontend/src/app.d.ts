@@ -10,7 +10,18 @@ declare global {
 			};
 			is_logged_in: boolean;
 		}
-		// interface PageData {}
+		
+		interface UserData {
+		user_data?: {
+			is_logged_in: boolean;
+			username: string;
+			user_id: string;
+		};
+		}
+
+		interface PageData extends UserData {
+			form?: any;
+			}
 		// interface PageState {}
 		// interface Platform {}
 	}

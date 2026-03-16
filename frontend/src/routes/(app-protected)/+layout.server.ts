@@ -1,10 +1,15 @@
 import { redirect } from '@sveltejs/kit';
 
-export const load = ({ locals }) => {
-	if (!locals.is_logged_in) {
-		throw redirect(302, '/login');
-	}
-	return {
-		user: locals.user
-	};
+import type { LayoutServerLoad } from './$types';
+
+export const load: LayoutServerLoad = async ({ parent }) => {
+  const parent_data = await parent() as App.UserData;
+
+  if (parent_data.user_data && !parent_data.user_data.is_logged_in) {
+    throw redirect(302, '/login');
+  }
+
+  return {
+    ...parent_data
+  };
 };
