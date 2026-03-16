@@ -10,6 +10,10 @@ from app.services.user import _user_service
 from app.services.auth import _auth_service
 from app.services.drive import _drive_service
 
+from fastapi.security.utils import get_authorization_scheme_param
+from fastapi import Request, HTTPException, status
+from starlette.status import HTTP_401_UNAUTHORIZED
+
 # Databases
 def get_db():
     db = SessionLocal()
@@ -21,8 +25,33 @@ def get_db():
 def get_minio() -> Minio:
     return init_minio_client()
 
+class HTTPBearerCookie(HTTPBearer):
+    async def __call__(self, request: Request):
+        # 1. incerca mai intai din header 
+        try:
+            return await super().__call__(request)
+        except HTTPException:
+            pass
+        
+        # 2. daca nu e in header, incearca din cookie
+        authorization = request.cookies.get("access_token")
+        if authorization is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        scheme, param = get_authorization_scheme_param(authorization)
+        if scheme.lower() != "bearer":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid auth scheme",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return HTTPAuthorizationCredentials(scheme=scheme, token=param)
+
 # Authentication
-security = HTTPBearer()
+security = HTTPBearerCookie()
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)) -> User:
 
     credentials_exception = HTTPException(
