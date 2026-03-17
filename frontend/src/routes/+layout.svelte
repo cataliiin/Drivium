@@ -11,9 +11,11 @@
 			});
 		});
 	});
+
+    const { children } = $props();
 </script>
 
-<slot />
+{@render children()}
 
 <style>
     ::view-transition-group(root) {
