@@ -10,7 +10,7 @@
         <input name="confirm_password" class="input" type="password" placeholder="Confirm Password" required/>
     </fieldset>
     <fieldset class="flex justify-left">
-        <button type="submit" class="btn preset-outlined-surface-300-700">Register</button>
-        <a href="/login" class="btn preset-ghost-surface w-full text-center no-underline">Login instead</a>
+        <button type="submit" class="btn flex-1 preset-outlined-surface-300-700">Register</button>
+        <a href="/login" class="btn flex-1 preset-ghost-surface w-full text-center no-underline">Login instead</a>
     </fieldset>
 </form>

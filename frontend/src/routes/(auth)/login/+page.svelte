@@ -9,7 +9,7 @@
         <input name="password" class="input" type="password" placeholder="Password" required/>
     </fieldset>
     <fieldset class="flex justify-left">
-        <button type="submit" class="btn preset-outlined-surface-300-700">Login</button>
-        <a href="/register" class="btn preset-ghost-surface w-full text-center no-underline">Create an Account</a>
+        <button type="submit" class="btn flex-1 preset-outlined-surface-300-700">Login</button>
+        <a href="/register" class="btn flex-1 preset-ghost-surface w-full text-center no-underline">Create an Account</a>
     </fieldset>
 </form>
