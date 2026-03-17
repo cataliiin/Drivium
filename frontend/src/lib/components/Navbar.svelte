@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { HardDrive, UserIcon, LogIn, UserRoundPlus, LogOut, Settings } from '@lucide/svelte';
 	import { AppBar, Menu, Portal } from '@skeletonlabs/skeleton-svelte';
+    import { enhance } from '$app/forms';
 
     let { is_logged_in } = $props();
 </script>
@@ -32,13 +33,18 @@
                             <Menu.Separator />
 
                             <Menu.Item value="logout" class="w-full">
-                            <Menu.ItemText class="w-full">
+                            <Menu.ItemText class="w-full relative">
                                 <div class="flex items-center justify-between w-full gap-4">
                                 <span>Logout</span>
                                 <LogOut class="size-6 shrink-0" />
                                 </div>
+                                
+                                <form method="POST" action="/logout?/logout" use:enhance class="absolute inset-0">
+                                <button type="submit" aria-label="Logout" class="absolute inset-0 w-full h-full bg-transparent border-none cursor-pointer opacity-0 hover:opacity-0 active:opacity-0" style="pointer-events: auto;"></button>
+                                </form>
                             </Menu.ItemText>
                             </Menu.Item>
+
                         </Menu.Content>
                     </Menu.Positioner>
                 </Portal>
