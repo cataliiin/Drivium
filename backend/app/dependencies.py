@@ -10,7 +10,6 @@ from app.services.user import _user_service
 from app.services.auth import _auth_service
 from app.services.drive import _drive_service
 
-from fastapi.security.utils import get_authorization_scheme_param
 from fastapi import Request, HTTPException, status
 from starlette.status import HTTP_401_UNAUTHORIZED
 
@@ -41,14 +40,8 @@ class HTTPBearerCookie(HTTPBearer):
                 detail="Not authenticated",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        scheme, param = get_authorization_scheme_param(authorization)
-        if scheme.lower() != "bearer":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid auth scheme",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        return HTTPAuthorizationCredentials(scheme=scheme, token=param)
+        # Cookie contains raw token (not "Bearer token" format)
+        return HTTPAuthorizationCredentials(scheme="Bearer", credentials=authorization)
 
 # Authentication
 security = HTTPBearerCookie()
