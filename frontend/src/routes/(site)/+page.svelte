@@ -35,7 +35,7 @@
 			</h1>
 
 			<p class="text-4xl md:text-3xl mb-12 text-slate-260 max-w-3xl mx-auto leading-relaxed font-light">
-				Cloud storage ultra-rapid<br>FastAPI backend + SvelteKit frontend 
+				Cloud storage built with FastAPI and SvelteKit<br/>Secure, fast, and open source
 			</p>
 
 			<div class="flex flex-col lg:flex-row gap-6 justify-center items-center mb-20">
