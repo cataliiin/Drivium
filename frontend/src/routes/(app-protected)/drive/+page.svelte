@@ -1,96 +1,175 @@
-
-
 <script lang="ts">
-    import { FileImage, FileVideo, FileText, MoreVertical, Plus, Icon, File} from '@lucide/svelte';
+    import { onMount } from 'svelte';
+    import { fade } from 'svelte/transition';
+    import { 
+        FileImage, FileVideo, FileText, MoreVertical, 
+        Plus, File, Folder, ChevronRight 
+    } from '@lucide/svelte';
+    import type { FolderContentResponse } from '$lib/api/contracts';
+    import { listContentRoot } from '$lib/api/drive';
 
-    const tableData = [
-        { id: '1', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '2', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '3', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '4', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '5', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '6', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '7', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '8', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '9', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '10', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '11', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '12', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '13', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '14', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '15', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '16', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '17', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '18', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '19', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
-        { id: '20', name: 'beach_sunset.jpg', type: 'Image', size: '2.4 MB', date: '2024-06-12' },
+    let { data } = $props();
+    let driveContent = $state<FolderContentResponse | null>(null);
+    let error = $state<string | null>(null);
 
-    ];
-
-    const getIcon = (type: string) => {
-        if (type === 'Image') return FileImage;
-        if (type === 'Video') return FileVideo;
-        return FileText;
-    };
+    onMount(async () => {
+        try {
+            // loading simulation
+            // await new Promise(r => setTimeout(r, 5000)); 
+            driveContent = await listContentRoot();
+        } catch (err) { 
+            error = err instanceof Error ? err.message : 'Failed to load drive contents';
+        }
+    });
 </script>
 
-<div class="h-screen flex flex-col bg-surface-50-950 overflow-hidden">
+<div class="h-screen flex flex-col bg-surface-50-950 overflow-hidden font-sans text-surface-900-50">
     
-    <header class="w-full p-5 h-16 flex items-center gap-4 shrink-0 z-10">
-        <ol class="flex items-center gap-4 text-sm">
-            <li><a class="opacity-60 hover:underline" href="/">Root</a></li>
-            <li class="opacity-50" aria-hidden="true">&rsaquo;</li>
-            <li><a class="opacity-60 hover:underline" href="/categories">Photos</a></li>
-            <li class="opacity-50" aria-hidden="true">&rsaquo;</li>
-            <li class="font-bold">Summer</li>
-        </ol>
-        <button class="btn btn-sm preset-filled-primary-500 hover:preset-filled-primary-600 circle ml-auto">
-            <Plus class="size-7" />
+    <header class="w-full px-6 h-16 flex items-center gap-4 shrink-0 z-10 border-b border-surface-500/10">
+        <nav aria-label="Breadcrumb" class="flex-1">
+            <ol class="flex items-center gap-2 text-sm">
+                {#if !driveContent && !error}
+                    <li class="flex items-center gap-2 animate-pulse">
+                        <div class="placeholder w-20 h-4 rounded-full"></div>
+                        <ChevronRight class="size-4 opacity-20" />
+                        <div class="placeholder w-32 h-4 rounded-full opacity-60"></div>
+                    </li>
+                {:else if driveContent}
+                    {#each driveContent.path as crumb, i}
+                        {@const isLast = i === driveContent.path.length - 1}
+                        {@const isRoot = crumb.name === 'Root'}
+                        {@const label = isRoot ? 'My Drive' : crumb.name}
+
+                        <li class="flex items-center gap-2">
+                            {#if isLast}
+                                <span class="font-bold">{label}</span>
+                            {:else}
+                                <a class="opacity-60 hover:opacity-100 hover:underline transition-opacity" 
+                                   href={isRoot ? '/drive' : `/drive/${crumb.id}`}>
+                                    {label}
+                                </a>
+                                <ChevronRight class="size-4 opacity-40" aria-hidden="true" />
+                            {/if}
+                        </li>
+                    {/each}
+                {/if}
+            </ol>
+        </nav>
+
+        <button 
+            disabled={!driveContent}
+            class="btn btn-sm preset-filled-primary-500 hover:preset-filled-primary-600 circle ml-auto disabled:opacity-50 disabled:cursor-not-allowed">
+            <Plus class="size-6" />
         </button>
     </header>
 
-    <hr class="hr border-surface-500/10" />
-
-    <main class="flex-1 overflow-y-auto">
-        <div class="table-wrap p-3">
-            <table class="table caption-bottom relative">
-                <thead class="sticky top-0 bg-surface-50-950 shadow-sm z-10">
-                    <tr>
-                        <th class="w-10">Type</th>
-                        <th>Name</th>
-                        <th>Date Modified</th>
-                        <th class="text-right!">Size</th>
-                        <th class="w-10"></th>
-                    </tr>
-                </thead>
-                <tbody class="[&>tr]:hover:preset-tonal-primary transition-colors cursor-pointer">
-                    {#each tableData as file (file.id)}
+    <main class="flex-1 overflow-y-auto px-4">
+        {#if error}
+            <div class="p-10 text-center text-error-500 font-semibold">{error}</div>
+        {:else if !driveContent}
+            <div class="table-wrap py-3">
+                <table class="table table-fixed w-full">
+                    <thead>
                         <tr>
-                            <td>
-                                <File class="size-5 text-surface-500" />
+                            <th style="width: 60px;">Type</th>
+                            <th>Name</th>
+                            <th style="width: 150px;">Created</th>
+                            <th style="width: 120px;" class="text-right">Size</th>
+                            <th style="width: 60px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {#each Array(8) as _, i}
+                        <tr class="pointer-events-none">
+                            <td class="text-center">
+                                <div class="placeholder size-6 rounded animate-pulse inline-block" style="animation-delay: {i * 100}ms"></div>
                             </td>
-                            <td class="font-medium">{file.name}</td>
-                            <td class="opacity-60">{file.date}</td>
-                            <td class="text-right font-mono text-xs">{file.size}</td>
                             <td>
-                                <button class="btn btn-sm hover:preset-soft-surface p-1">
-                                    <MoreVertical class="size-4" />
-                                </button>
+                                <div class="placeholder h-4 w-3/4 rounded-full animate-pulse" style="animation-delay: {i * 100}ms"></div>
+                            </td>
+                            <td>
+                                <div class="placeholder h-4 w-24 rounded-full opacity-40 animate-pulse" style="animation-delay: {i * 100}ms"></div>
+                            </td>
+                            <td class="text-right">
+                                <div class="placeholder h-4 w-16 rounded-full opacity-20 animate-pulse inline-block" style="animation-delay: {i * 100}ms"></div>
+                            </td>
+                            <td class="text-right">
+                                <div class="placeholder size-8 rounded-full opacity-10 animate-pulse inline-block" style="animation-delay: {i * 100}ms"></div>
                             </td>
                         </tr>
                     {/each}
-                </tbody>
+                    </tbody>
+                </table>
+            </div>
+        {:else}
+            <div class="table-wrap py-3" in:fade={{ duration: 200 }}>
+                <table class="table table-fixed w-full border-collapse">
+                    <thead class="sticky top-0 bg-surface-50-950 shadow-sm z-10">
+                        <tr>
+                            <th style="width: 60px;" class="text-center opacity-50 font-normal">Type</th>
+                            <th class="text-left opacity-50 font-normal">Name</th>
+                            <th style="width: 150px;" class="text-left opacity-50 font-normal">Created</th>
+                            <th style="width: 120px;" class="text-right opacity-50 font-normal">Size</th>
+                            <th style="width: 60px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="[&>tr]:hover:preset-tonal-primary transition-colors cursor-pointer border-separate">
+                        {#each driveContent.folders as folder}
+                            <tr>
+                                <td class="text-center">
+                                    <Folder class="size-6 text-primary-500 fill-primary-500/20 mx-auto" />
+                                </td>
+                                <td class="truncate font-medium text-left">{folder.name}</td>
+                                <td class="text-left font-mono text-sm opacity-70 tabular-nums">
+                                    {new Date(folder.created_at).toLocaleDateString('en-GB').replace(/\//g, '.')}
+                                </td>
+                                <td class="text-right opacity-30 text-xs italic">—</td>
+                                <td class="text-right">
+                                    <button class="btn btn-sm btn-ghost circle"><MoreVertical class="size-5" /></button>
+                                </td>
+                            </tr>
+                        {/each}
 
-            </table>
-        </div>
+                        {#each driveContent.files as file}
+                            {@const ext = file.name.split('.').pop()?.toLowerCase()}
+                            {@const IconComponent = ext === 'txt' ? FileText : (['jpg', 'png', 'jpeg'].includes(ext ?? '')) ? FileImage : ext === 'mp4' ? FileVideo : File}
+                            <tr>
+                                <td class="text-center">
+                                    <IconComponent class="size-6 text-surface-400 mx-auto" />
+                                </td>
+                                <td class="truncate text-left">{file.name}</td>
+                                <td class="text-left font-mono text-sm opacity-70 tabular-nums">
+                                    {new Date(file.uploaded_at || "").toLocaleDateString('en-GB').replace(/\//g, '.')}
+                                </td>
+                                <td class="text-right font-mono text-sm opacity-70 tabular-nums">
+                                    {(file.size / (1024 * 1024)).toFixed(2)} MB
+                                </td>
+                                <td class="text-right">
+                                    <button class="btn btn-sm btn-ghost circle"><MoreVertical class="size-5" /></button>
+                                </td>
+                            </tr>                        
+                        {/each}
+                    </tbody>
+                </table>
+            </div>
+        {/if}
     </main>
 
-    <footer class="sticky bottom-0 z-50 w-full p-4 bg-slate-900/80 backdrop-blur-md border-t border-white/10">
-        <div class="container mx-auto text-sm text-center opacity-50">
-              Total storage used: 3.2 GB 
-              <vr class="mx-7 inline-block h-3 border-l border-white/20" ></vr>
-              Storage used in this folder: 51.5 MB 
+    <footer class="w-full py-3 px-6 bg-surface-100-800 border-t border-surface-500/10 shrink-0">
+        <div class="flex items-center justify-center gap-6 text-xs font-medium opacity-60 text-center">
+              <span>Total storage used: <strong class="text-surface-900-50">3.2 GB</strong></span>
+              <span class="h-3 w-[1px] bg-surface-500/30"></span>
+              <span>Folder size: <strong class="text-surface-900-50">51.5 MB</strong></span>
         </div>
     </footer>
 
 </div>
+
+<style>
+    .table-wrap {
+        width: 100%;
+    }
+    table {
+        table-layout: fixed;
+    }
+</style>
