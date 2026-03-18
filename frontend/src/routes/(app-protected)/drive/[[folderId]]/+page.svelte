@@ -2,19 +2,42 @@
     import { page } from '$app/state';
     import { fade } from 'svelte/transition';
     import { goto } from '$app/navigation';
-    import { 
-        FileImage, FileVideo, FileText, MoreVertical, 
-        Plus, File, Folder, ChevronRight 
-    } from '@lucide/svelte';
+    import { FileImage, FileVideo, FileText, MoreVertical, Plus, File, Folder, ChevronRight} from '@lucide/svelte';
     import type { FolderContentResponse } from '$lib/api/contracts';
-    import { listContentRoot, listContentFolder } from '$lib/api/drive';
+    import { listContentRoot, listContentFolder, createFolder } from '$lib/api/drive';
+    import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
+    import NewFolderModal from '$lib/components/NewFolderModal.svelte';
+
+    let current_folder_id = $state<string | undefined>(undefined);
 
     let driveContent = $state<FolderContentResponse | null>(null);
     let error = $state<string | null>(null);
     
+    let isNewFolderModalOpen = $state(false);
+    
+    async function handleCreateFolder(newFolderName: string) {
+        try {
+            let parentId = current_folder_id ? parseInt(current_folder_id) : null;
+            if (parentId === 0) parentId = null;
+
+            await createFolder({ 
+                name: newFolderName, 
+                parent_folder_id: parentId 
+            });
+
+            isNewFolderModalOpen = false;
+
+            await fetchData(current_folder_id);
+            
+        } catch (err) {
+            error = err instanceof Error ? err.message : 'Could not create folder';
+        }
+    }
+
+
     $effect(() => {
-        const id = page.params.folderId;
-        fetchData(id);
+        current_folder_id = page.params.folderId;
+        fetchData(current_folder_id);
     });
 
     function navigateToFolder(id: number) {
@@ -68,11 +91,21 @@
             </ol>
         </nav>
 
-        <button 
-            disabled={!driveContent}
-            class="btn btn-sm preset-filled-primary-500 hover:preset-filled-primary-600 circle ml-auto disabled:opacity-50 disabled:cursor-not-allowed">
-            <Plus class="size-6" />
-        </button>
+        <Menu >
+            <Menu.Trigger disabled={!driveContent} class="btn btn-sm preset-filled-primary-500 hover:preset-filled-primary-600 circle ml-auto disabled:opacity-50 disabled:cursor-not-allowed"><Plus class="size-6" /></Menu.Trigger>
+            <Portal>
+                <Menu.Positioner style="z-index: 9999;">
+                    <Menu.Content>
+                        <Menu.Item value="new_folder" onclick={() => isNewFolderModalOpen = true}>
+                            <Menu.ItemText>New Folder</Menu.ItemText>
+                        </Menu.Item>
+                        <Menu.Item value="upload_file">
+                            <Menu.ItemText>Upload File</Menu.ItemText>
+                        </Menu.Item>
+                    </Menu.Content>
+                </Menu.Positioner>
+            </Portal>
+        </Menu>
     </header>
 
     <main class="flex-1 overflow-y-auto px-4">
@@ -174,6 +207,8 @@
               <span>Folder size: <strong class="text-surface-900-50">51.5 MB</strong></span>
         </div>
     </footer>
+
+    <NewFolderModal bind:open={isNewFolderModalOpen} onCreate={handleCreateFolder} />
 
 </div>
 
