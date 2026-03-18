@@ -1,26 +1,38 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { page } from '$app/state';
     import { fade } from 'svelte/transition';
+    import { goto } from '$app/navigation';
     import { 
         FileImage, FileVideo, FileText, MoreVertical, 
         Plus, File, Folder, ChevronRight 
     } from '@lucide/svelte';
     import type { FolderContentResponse } from '$lib/api/contracts';
-    import { listContentRoot } from '$lib/api/drive';
+    import { listContentRoot, listContentFolder } from '$lib/api/drive';
 
-    let { data } = $props();
     let driveContent = $state<FolderContentResponse | null>(null);
     let error = $state<string | null>(null);
+    
+    $effect(() => {
+        const id = page.params.folderId;
+        fetchData(id);
+    });
 
-    onMount(async () => {
+    function navigateToFolder(id: number) {
+        goto(`/drive/${id}`);
+    }
+
+    async function fetchData(id?: string) {
         try {
-            // loading simulation
-            // await new Promise(r => setTimeout(r, 5000)); 
-            driveContent = await listContentRoot();
+            driveContent = null;
+            if (id) {
+                driveContent = await listContentFolder(parseInt(id));
+            } else {
+                driveContent = await listContentRoot();
+            }
         } catch (err) { 
             error = err instanceof Error ? err.message : 'Failed to load drive contents';
         }
-    });
+    }
 </script>
 
 <div class="h-screen flex flex-col bg-surface-50-950 overflow-hidden font-sans text-surface-900-50">
@@ -115,7 +127,7 @@
                     </thead>
                     <tbody class="[&>tr]:hover:preset-tonal-primary transition-colors cursor-pointer border-separate">
                         {#each driveContent.folders as folder}
-                            <tr>
+                            <tr onclick={() => navigateToFolder(folder.id)}>
                                 <td class="text-center">
                                     <Folder class="size-6 text-primary-500 fill-primary-500/20 mx-auto" />
                                 </td>
