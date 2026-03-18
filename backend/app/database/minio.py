@@ -15,7 +15,7 @@ def init_minio_client():
             minio_client = Minio(MINIO_ENDPOINT,
                                 access_key=MINIO_USER,
                                 secret_key=MINIO_PASS,
-                                secure=False)
+                                secure=MINIO_SECURE)
             
             bucket = MINIO_BUCKET_NAME
             if not minio_client.bucket_exists(bucket):

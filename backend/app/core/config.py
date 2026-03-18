@@ -1,8 +1,16 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from typing import List
 
-load_dotenv()
+ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(dotenv_path=ENV_PATH)
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in ("true", "1", "t", "yes", "y", "on")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./drivium.db")
 
@@ -17,7 +25,7 @@ DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
 FILENAME_PATTERN = os.getenv("FILENAME_PATTERN", r"^[a-zA-Z0-9_\-\.() ]+$")
 
 # CORS Configuration
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173,http://localhost:5174").split(",")
 CORS_ALLOW_CREDENTIALS = os.getenv("CORS_ALLOW_CREDENTIALS", "true").lower() in ("true", "1", "t")
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 CORS_ALLOW_HEADERS = ["*"]
@@ -65,10 +73,13 @@ ALLOWED_MIME_TYPES_DEFAULT = [
 ALLOWED_MIME_TYPES: List[str] = os.getenv("ALLOWED_MIME_TYPES", ",".join(ALLOWED_MIME_TYPES_DEFAULT)).split(",")
 
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
-MINIO_USER = os.getenv("MINIO_USER", "admin")
-MINIO_PASS = os.getenv("MINIO_PASS", "supersecret123")
+MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", os.getenv("MINIO_USER", "secret_key"))
+MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", os.getenv("MINIO_PASS", "secret_key"))
+# Backward-compatible aliases used by existing imports.
+MINIO_USER = MINIO_ACCESS_KEY
+MINIO_PASS = MINIO_SECRET_KEY
 MINIO_BUCKET_NAME = os.getenv("MINIO_BUCKET_NAME", "drivium")
-MINIO_SECURE = os.getenv("MINIO_SECURE", "false").lower() == "false"
+MINIO_SECURE = _env_bool("MINIO_SECURE", default=False)
 
 PRESIGNED_UPLOAD_URL_EXPIRES_MINUTES: int = 60
 PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES: int = 60

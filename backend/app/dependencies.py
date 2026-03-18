@@ -11,7 +11,6 @@ from app.services.auth import _auth_service
 from app.services.drive import _drive_service
 
 from fastapi import Request, HTTPException, status
-from starlette.status import HTTP_401_UNAUTHORIZED
 
 # Databases
 def get_db():
