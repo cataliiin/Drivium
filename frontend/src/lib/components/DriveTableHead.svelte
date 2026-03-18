@@ -4,6 +4,5 @@
         <th>Name</th>
         <th style="width: 150px;">Created</th>
         <th style="width: 120px;" class="text-right">Size</th>
-        <th style="width: 60px;"></th>
     </tr>
 </thead>

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Folder, MoreVertical } from '@lucide/svelte';
+    import { Folder} from '@lucide/svelte';
     import { goto } from '$app/navigation';
 
     let { folder, onRightClick } = $props();
@@ -26,7 +26,4 @@
         {date}
     </td>
     <td class="text-left opacity-30 text-xs italic">—</td>
-    <td class="text-right">
-        <button class="btn btn-sm btn-ghost circle" onclick={handleRightClick}><MoreVertical class="size-5" /></button>
-    </td>
 </tr>

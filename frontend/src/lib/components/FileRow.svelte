@@ -44,9 +44,4 @@
     <td class="text-left font-mono text-sm opacity-70 tabular-nums">
         {(file.size / (1024 * 1024)).toFixed(2)} MB
     </td>
-    <td class="text-right">
-        <button class="btn btn-sm btn-ghost circle" onclick={handleRightClick}>
-            <MoreVertical class="size-5" />
-        </button>
-    </td>
 </tr>
