@@ -2,16 +2,22 @@
     import { Folder, MoreVertical } from '@lucide/svelte';
     import { goto } from '$app/navigation';
 
-    let { folder } = $props();
+    let { folder, onRightClick } = $props();
     const date = $derived(new Date(folder.created_at).toLocaleDateString('en-GB').replace(/\//g, '.'));
 
     function navigateToFolder(id: number) {
         goto(`/drive/${id}`);
     }
 
+    function handleRightClick(event: MouseEvent) {
+        event.preventDefault();
+        onRightClick(event, folder, 'folder');
+    }
+
 </script>
 
-<tr onclick={() => navigateToFolder(folder.id)}>
+<tr onclick={() => navigateToFolder(folder.id)}
+    oncontextmenu={handleRightClick}>
     <td class="text-center">
         <Folder class="size-6 text-primary-500 fill-primary-500/20 mx-auto" />
     </td>
@@ -21,6 +27,6 @@
     </td>
     <td class="text-left opacity-30 text-xs italic">—</td>
     <td class="text-right">
-        <button class="btn btn-sm btn-ghost circle"><MoreVertical class="size-5" /></button>
+        <button class="btn btn-sm btn-ghost circle" onclick={handleRightClick}><MoreVertical class="size-5" /></button>
     </td>
 </tr>

@@ -11,12 +11,45 @@
 	import DriveTableHead from '$lib/components/DriveTableHead.svelte';
 	import DriveBreadcrumbs from '$lib/components/DriveBreadcrumbs.svelte';
     import DriveLoadingPlaceholder from '$lib/components/DriveLoadingPlaceholder.svelte';
+    import DriveItemActionsMenu from '$lib/components/DriveItemActionsMenu.svelte';
 
     let current_folder_id = $state<string | undefined>(undefined);
 
     let driveContent = $state<FolderContentResponse | null>(null);
     let error = $state<string | null>(null);
     
+    async function fetchData(id?: string) {
+        try {
+            driveContent = null;
+            if (id) {
+                driveContent = await listContentFolder(parseInt(id));
+            } else {
+                driveContent = await listContentRoot();
+            }
+        } catch (err) { 
+            error = err instanceof Error ? err.message : 'Failed to load drive contents';
+        }
+    }
+
+    // for DriveItemActionsMenu
+    let menuOpen = $state(false);
+    let menuTarget = $state(null);
+    let menuType = $state('folder');
+    let menuPos = $state({ x: 0, y: 0 });
+
+    function handleMenuOpen(e: MouseEvent, item: any, type: string) {
+        e.preventDefault();
+        menuPos = { x: e.clientX, y: e.clientY };
+        menuTarget = item;
+        menuType = type;
+        menuOpen = true;
+    }
+
+    function handleItemMenuAction(action: string, item: any) {
+        // implement rename, delete, download
+    }
+
+    // Actions
     let isNewFolderModalOpen = $state(false);
     async function handleCreateFolder(newFolderName: string) {
         try {
@@ -37,18 +70,6 @@
         }
     }
 
-    async function fetchData(id?: string) {
-        try {
-            driveContent = null;
-            if (id) {
-                driveContent = await listContentFolder(parseInt(id));
-            } else {
-                driveContent = await listContentRoot();
-            }
-        } catch (err) { 
-            error = err instanceof Error ? err.message : 'Failed to load drive contents';
-        }
-    }
 
     $effect(() => {
         current_folder_id = page.params.folderId;
@@ -62,6 +83,7 @@
         <nav aria-label="Breadcrumb" class="flex-1">
             <ol class="flex items-center gap-2 text-sm">
                 {#if !driveContent && !error}
+                    <!-- Loading placeholder for breadcrumbs -->
                     <li class="flex items-center gap-2 animate-pulse">
                         <div class="placeholder w-20 h-4 rounded-full"></div>
                         <ChevronRight class="size-4 opacity-20" />
@@ -101,11 +123,11 @@
                     <DriveTableHead />
                     <tbody class="[&>tr]:hover:preset-tonal-primary transition-colors cursor-pointer border-separate">
                         {#each driveContent.folders as folder}
-                            <FolderRow {folder} />
+                            <FolderRow {folder} onRightClick={handleMenuOpen} />
                         {/each}
 
                         {#each driveContent.files as file}
-                                 <FileRow {file} />            
+                                 <FileRow {file} onRightClick={handleMenuOpen} />            
                         {/each}
                     </tbody>
                 </table>
@@ -122,6 +144,14 @@
     </footer>
 
     <NewFolderModal bind:open={isNewFolderModalOpen} onCreate={handleCreateFolder} />
+
+    <DriveItemActionsMenu 
+        bind:open={menuOpen} 
+        activeItem={menuTarget} 
+        type={menuType} 
+        pos={menuPos}
+        onAction={(action: string, item: any) => handleItemMenuAction(action, item)} 
+    />
 
 </div>
 

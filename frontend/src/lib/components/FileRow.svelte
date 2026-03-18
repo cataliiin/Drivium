@@ -4,7 +4,7 @@
         FileArchive, FileCode, MoreVertical, FileIcon
     } from '@lucide/svelte';
 
-    let { file } = $props();
+    let { file, onRightClick } = $props();
 
     const iconMap: Record<string, any> = {
             txt: FileText,
@@ -26,9 +26,14 @@
     const ext = $derived(file.name.split('.').pop()?.toLowerCase());
     const IconComponent = $derived(iconMap[ext] || FileIcon);
     const date = $derived(new Date(file.uploaded_at || "").toLocaleDateString('en-GB').replace(/\//g, '.'));
+
+    function handleRightClick(event: MouseEvent) {
+        event.preventDefault();
+        onRightClick(event, file, 'file');
+    }
 </script>
 
-<tr>
+<tr oncontextmenu={handleRightClick}>
     <td class="text-center">
         <IconComponent class="size-6 text-surface-400 mx-auto" />
     </td>
@@ -40,6 +45,8 @@
         {(file.size / (1024 * 1024)).toFixed(2)} MB
     </td>
     <td class="text-right">
-        <button class="btn btn-sm btn-ghost circle"><MoreVertical class="size-5" /></button>
+        <button class="btn btn-sm btn-ghost circle" onclick={handleRightClick}>
+            <MoreVertical class="size-5" />
+        </button>
     </td>
 </tr>
