@@ -1,12 +1,16 @@
 <script lang="ts">
     import { page } from '$app/state';
     import { fade } from 'svelte/transition';
-    import { goto } from '$app/navigation';
-    import { FileImage, FileVideo, FileText, MoreVertical, Plus, File, Folder, ChevronRight} from '@lucide/svelte';
+    import { Plus, ChevronRight} from '@lucide/svelte';
     import type { FolderContentResponse } from '$lib/api/contracts';
     import { listContentRoot, listContentFolder, createFolder } from '$lib/api/drive';
     import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
     import NewFolderModal from '$lib/components/NewFolderModal.svelte';
+	import FolderRow from '$lib/components/FolderRow.svelte';
+    import FileRow from '$lib/components/FileRow.svelte';
+	import DriveTableHead from '$lib/components/DriveTableHead.svelte';
+	import DriveBreadcrumbs from '$lib/components/DriveBreadcrumbs.svelte';
+    import DriveLoadingPlaceholder from '$lib/components/DriveLoadingPlaceholder.svelte';
 
     let current_folder_id = $state<string | undefined>(undefined);
 
@@ -14,7 +18,6 @@
     let error = $state<string | null>(null);
     
     let isNewFolderModalOpen = $state(false);
-    
     async function handleCreateFolder(newFolderName: string) {
         try {
             let parentId = current_folder_id ? parseInt(current_folder_id) : null;
@@ -34,16 +37,6 @@
         }
     }
 
-
-    $effect(() => {
-        current_folder_id = page.params.folderId;
-        fetchData(current_folder_id);
-    });
-
-    function navigateToFolder(id: number) {
-        goto(`/drive/${id}`);
-    }
-
     async function fetchData(id?: string) {
         try {
             driveContent = null;
@@ -56,6 +49,11 @@
             error = err instanceof Error ? err.message : 'Failed to load drive contents';
         }
     }
+
+    $effect(() => {
+        current_folder_id = page.params.folderId;
+        fetchData(current_folder_id);
+    });
 </script>
 
 <div class="h-screen flex flex-col bg-surface-50-950 overflow-hidden font-sans text-surface-900-50">
@@ -70,23 +68,7 @@
                         <div class="placeholder w-32 h-4 rounded-full opacity-60"></div>
                     </li>
                 {:else if driveContent}
-                    {#each driveContent.path as crumb, i}
-                        {@const isLast = i === driveContent.path.length - 1}
-                        {@const isRoot = crumb.name === 'Root'}
-                        {@const label = isRoot ? 'My Drive' : crumb.name}
-
-                        <li class="flex items-center gap-2">
-                            {#if isLast}
-                                <span class="font-bold">{label}</span>
-                            {:else}
-                                <a class="opacity-60 hover:opacity-100 hover:underline transition-opacity" 
-                                   href={isRoot ? '/drive' : `/drive/${crumb.id}`}>
-                                    {label}
-                                </a>
-                                <ChevronRight class="size-4 opacity-40" aria-hidden="true" />
-                            {/if}
-                        </li>
-                    {/each}
+                    <DriveBreadcrumbs path={driveContent.path} />
                 {/if}
             </ol>
         </nav>
@@ -112,87 +94,18 @@
         {#if error}
             <div class="p-10 text-center text-error-500 font-semibold">{error}</div>
         {:else if !driveContent}
-            <div class="table-wrap py-3">
-                <table class="table table-fixed w-full">
-                    <thead>
-                        <tr>
-                            <th style="width: 60px;">Type</th>
-                            <th>Name</th>
-                            <th style="width: 150px;">Created</th>
-                            <th style="width: 120px;" class="text-right">Size</th>
-                            <th style="width: 60px;"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {#each Array(8) as _, i}
-                        <tr class="pointer-events-none">
-                            <td class="text-center">
-                                <div class="placeholder size-6 rounded animate-pulse inline-block" style="animation-delay: {i * 100}ms"></div>
-                            </td>
-                            <td>
-                                <div class="placeholder h-4 w-3/4 rounded-full animate-pulse" style="animation-delay: {i * 100}ms"></div>
-                            </td>
-                            <td>
-                                <div class="placeholder h-4 w-24 rounded-full opacity-40 animate-pulse" style="animation-delay: {i * 100}ms"></div>
-                            </td>
-                            <td class="text-right">
-                                <div class="placeholder h-4 w-16 rounded-full opacity-20 animate-pulse inline-block" style="animation-delay: {i * 100}ms"></div>
-                            </td>
-                            <td class="text-right">
-                                <div class="placeholder size-8 rounded-full opacity-10 animate-pulse inline-block" style="animation-delay: {i * 100}ms"></div>
-                            </td>
-                        </tr>
-                    {/each}
-                    </tbody>
-                </table>
-            </div>
+            <DriveLoadingPlaceholder />
         {:else}
             <div class="table-wrap py-3" in:fade={{ duration: 200 }}>
                 <table class="table table-fixed w-full border-collapse">
-                    <thead class="sticky top-0 bg-surface-50-950 shadow-sm z-10">
-                        <tr>
-                            <th style="width: 60px;" class="text-center opacity-50 font-normal">Type</th>
-                            <th class="text-left opacity-50 font-normal">Name</th>
-                            <th style="width: 150px;" class="text-left opacity-50 font-normal">Uploaded</th>
-                            <th style="width: 120px;" class="text-right opacity-50 font-normal">Size</th>
-                            <th style="width: 60px;"></th>
-                        </tr>
-                    </thead>
+                    <DriveTableHead />
                     <tbody class="[&>tr]:hover:preset-tonal-primary transition-colors cursor-pointer border-separate">
                         {#each driveContent.folders as folder}
-                            <tr onclick={() => navigateToFolder(folder.id)}>
-                                <td class="text-center">
-                                    <Folder class="size-6 text-primary-500 fill-primary-500/20 mx-auto" />
-                                </td>
-                                <td class="truncate font-medium text-left">{folder.name}</td>
-                                <td class="text-left font-mono text-sm opacity-70 tabular-nums">
-                                    {new Date(folder.created_at).toLocaleDateString('en-GB').replace(/\//g, '.')}
-                                </td>
-                                <td class="text-left opacity-30 text-xs italic">—</td>
-                                <td class="text-right">
-                                    <button class="btn btn-sm btn-ghost circle"><MoreVertical class="size-5" /></button>
-                                </td>
-                            </tr>
+                            <FolderRow {folder} />
                         {/each}
 
                         {#each driveContent.files as file}
-                            {@const ext = file.name.split('.').pop()?.toLowerCase()}
-                            {@const IconComponent = ext === 'txt' ? FileText : (['jpg', 'png', 'jpeg'].includes(ext ?? '')) ? FileImage : ext === 'mp4' ? FileVideo : File}
-                            <tr>
-                                <td class="text-center">
-                                    <IconComponent class="size-6 text-surface-400 mx-auto" />
-                                </td>
-                                <td class="truncate text-left">{file.name}</td>
-                                <td class="text-left font-mono text-sm opacity-70 tabular-nums">
-                                    {new Date(file.uploaded_at || "").toLocaleDateString('en-GB').replace(/\//g, '.')}
-                                </td>
-                                <td class="text-left font-mono text-sm opacity-70 tabular-nums">
-                                    {(file.size / (1024 * 1024)).toFixed(2)} MB
-                                </td>
-                                <td class="text-right">
-                                    <button class="btn btn-sm btn-ghost circle"><MoreVertical class="size-5" /></button>
-                                </td>
-                            </tr>                        
+                                 <FileRow {file} />            
                         {/each}
                     </tbody>
                 </table>
