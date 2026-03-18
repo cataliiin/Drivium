@@ -63,18 +63,17 @@
                 break;
             case 'delete':
                 try {
-                     if (isFile) {
+                    if (isFile) {
                         await deleteFile(item.id);
                     } else {
                         await deleteFolder(item.id);
                     }
+                    await fetchData(current_folder_id);
                 } catch (err) {
                     error = err instanceof Error ? err.message : 'Failed to delete item';
                 }
                 break;
         }
-
-        await fetchData(current_folder_id);
     }
 
     // Actions
@@ -175,7 +174,7 @@
                         {/each}
 
                         {#each driveContent.files as file}
-                                 <FileRow {file} onRightClick={handleMenuOpen} />            
+                            <FileRow {file} onRightClick={handleMenuOpen} />            
                         {/each}
                     </tbody>
                 </table>
