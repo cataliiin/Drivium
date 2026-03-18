@@ -14,7 +14,7 @@ PROJECT_NAME = os.getenv("PROJECT_NAME", "Drivium")
 PROJECT_DESCRIPTION = os.getenv("PROJECT_DESCRIPTION", "Google Drive clone")
 DEBUG = os.getenv("DEBUG", "True").lower() in ("true", "1", "t")
 
-FILENAME_PATTERN = os.getenv("FILENAME_PATTERN", r"^[a-zA-Z0-9_\-\.()]+$")
+FILENAME_PATTERN = os.getenv("FILENAME_PATTERN", r"^[a-zA-Z0-9_\-\.() ]+$")
 
 # CORS Configuration
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
