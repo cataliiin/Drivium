@@ -108,7 +108,7 @@
                         <tr>
                             <th style="width: 60px;" class="text-center opacity-50 font-normal">Type</th>
                             <th class="text-left opacity-50 font-normal">Name</th>
-                            <th style="width: 150px;" class="text-left opacity-50 font-normal">Created</th>
+                            <th style="width: 150px;" class="text-left opacity-50 font-normal">Uploaded</th>
                             <th style="width: 120px;" class="text-right opacity-50 font-normal">Size</th>
                             <th style="width: 60px;"></th>
                         </tr>
@@ -123,7 +123,7 @@
                                 <td class="text-left font-mono text-sm opacity-70 tabular-nums">
                                     {new Date(folder.created_at).toLocaleDateString('en-GB').replace(/\//g, '.')}
                                 </td>
-                                <td class="text-right opacity-30 text-xs italic">—</td>
+                                <td class="text-left opacity-30 text-xs italic">—</td>
                                 <td class="text-right">
                                     <button class="btn btn-sm btn-ghost circle"><MoreVertical class="size-5" /></button>
                                 </td>
@@ -141,7 +141,7 @@
                                 <td class="text-left font-mono text-sm opacity-70 tabular-nums">
                                     {new Date(file.uploaded_at || "").toLocaleDateString('en-GB').replace(/\//g, '.')}
                                 </td>
-                                <td class="text-right font-mono text-sm opacity-70 tabular-nums">
+                                <td class="text-left font-mono text-sm opacity-70 tabular-nums">
                                     {(file.size / (1024 * 1024)).toFixed(2)} MB
                                 </td>
                                 <td class="text-right">
