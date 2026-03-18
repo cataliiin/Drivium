@@ -4,7 +4,7 @@
 
     let { title, placeholder, open = $bindable(), onSubmit } = $props();
     
-    let text = $state('');
+    let text = $state('');;
 
     function handleSubmit() {
         if (!text.trim()) return;
@@ -12,6 +12,14 @@
         text = '';
         open = false;
     }
+
+    // for autofocus cuz idk why 'autofocus' attribute doesnt work
+    let inputRef = $state<HTMLInputElement>();
+    $effect(() => {
+        if (open) {
+            setTimeout(() => inputRef?.focus(), 100);
+        }
+    });
 </script>
 
 <Dialog open={open} onOpenChange={(e) => (open = e.open)}>
@@ -25,7 +33,9 @@
                 </header>
 
                 <input 
+                    id="modal-input"
                     type="text" 
+                    bind:this={inputRef}
                     bind:value={text} 
                     placeholder={placeholder} 
                     class="input p-3 bg-surface-200-800 border-none rounded-lg w-full outline-none ring-primary-500 focus:ring-2"
@@ -35,7 +45,7 @@
                 <footer class="flex justify-end gap-3">
                     <Dialog.CloseTrigger class="btn hover:preset-tonal">Cancel</Dialog.CloseTrigger>
                     <button class="btn preset-filled-primary-500 font-bold" onclick={handleSubmit} disabled={!text.trim()}>
-                        Create
+                        Submit
                     </button>
                 </footer>
             </Dialog.Content>
