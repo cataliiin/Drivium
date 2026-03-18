@@ -3,15 +3,16 @@
     import { fade } from 'svelte/transition';
     import { Plus, ChevronRight} from '@lucide/svelte';
     import type { FolderContentResponse } from '$lib/api/contracts';
-    import { listContentRoot, listContentFolder, createFolder } from '$lib/api/drive';
+    import { listContentRoot, listContentFolder, createFolder, renameFile, deleteFile, renameFolder, deleteFolder } from '$lib/api/drive';
     import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
-    import NewFolderModal from '$lib/components/NewFolderModal.svelte';
 	import FolderRow from '$lib/components/FolderRow.svelte';
     import FileRow from '$lib/components/FileRow.svelte';
 	import DriveTableHead from '$lib/components/DriveTableHead.svelte';
 	import DriveBreadcrumbs from '$lib/components/DriveBreadcrumbs.svelte';
     import DriveLoadingPlaceholder from '$lib/components/DriveLoadingPlaceholder.svelte';
     import DriveItemActionsMenu from '$lib/components/DriveItemActionsMenu.svelte';
+    import type { FolderResponse, FileResponse } from '$lib/api/contracts';
+	import TextInputModal from '$lib/components/TextInputModal.svelte';
 
     let current_folder_id = $state<string | undefined>(undefined);
 
@@ -45,8 +46,35 @@
         menuOpen = true;
     }
 
-    function handleItemMenuAction(action: string, item: any) {
-        // implement rename, delete, download
+    let isRenameModalOpen = $state(false);
+    let renameTargetId = $state<number | null>(null);
+    let renameItemType = $state<'file' | 'folder'>('folder');
+    let fileExtensionTargetFile = $state<string | null>(null);
+
+    async function handleItemMenuAction(action: string, item: FolderResponse | FileResponse) {
+        const isFile = 'size' in item;
+
+        switch(action) {
+            case 'rename':
+                renameTargetId = item.id;
+                renameItemType = isFile ? 'file' : 'folder';
+                fileExtensionTargetFile = isFile ? item.name.split('.').pop() || null : null;
+                isRenameModalOpen = true;
+                break;
+            case 'delete':
+                try {
+                     if (isFile) {
+                        await deleteFile(item.id);
+                    } else {
+                        await deleteFolder(item.id);
+                    }
+                } catch (err) {
+                    error = err instanceof Error ? err.message : 'Failed to delete item';
+                }
+                break;
+        }
+
+        await fetchData(current_folder_id);
     }
 
     // Actions
@@ -70,6 +98,26 @@
         }
     }
 
+    async function handleRename(newName: string) {
+        try {
+            if (!renameTargetId) return;
+
+            if (renameItemType === 'file') {
+                if (fileExtensionTargetFile && !newName.endsWith(`.${fileExtensionTargetFile}`)) {
+                    newName += `.${fileExtensionTargetFile}`;
+                }
+
+                await renameFile(renameTargetId, newName);
+            } else {
+                await renameFolder(renameTargetId, newName);
+            }
+
+            isRenameModalOpen = false;
+            await fetchData(current_folder_id);
+        } catch (err) {
+            error = err instanceof Error ? err.message : 'Could not rename item';
+        }
+    }
 
     $effect(() => {
         current_folder_id = page.params.folderId;
@@ -143,7 +191,8 @@
         </div>
     </footer>
 
-    <NewFolderModal bind:open={isNewFolderModalOpen} onCreate={handleCreateFolder} />
+    <TextInputModal title="New Folder" placeholder="Folder Name" bind:open={isNewFolderModalOpen} onSubmit={handleCreateFolder} />
+    <TextInputModal title="Rename Folder" placeholder="Folder Name" bind:open={isRenameModalOpen} onSubmit={handleRename} />
 
     <DriveItemActionsMenu 
         bind:open={menuOpen} 
