@@ -1,8 +1,24 @@
-import { type Handle } from '@sveltejs/kit';
+import { error, type Handle } from '@sveltejs/kit';
 import { JWT_SECRET_KEY } from '$env/static/private';
 import jwt from 'jsonwebtoken';
+import {health} from '$lib/api/health';
 
 export const handle: Handle = async ({ event, resolve }) => {
+	try {
+        const healthResponse = await health();
+        if (!(healthResponse.status == "ok")) {
+			return error(503, {
+				message: "Backend service is currently unavailable. Please try again later."
+			});
+		}
+        
+    } catch (err) {
+        return error(503, {
+            message: "Backend service is currently unavailable.	Please try again later."
+        });
+    }
+
+
 	event.locals.is_logged_in = !!event.cookies.get('access_token');
 
 	if (event.locals.is_logged_in) {
