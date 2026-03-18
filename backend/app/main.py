@@ -10,8 +10,9 @@ from app.core.config import (
     CORS_ORIGINS,
     CORS_ALLOW_CREDENTIALS,
     CORS_ALLOW_METHODS,
-    CORS_ALLOW_HEADERS
+    CORS_ALLOW_HEADERS,
 )
+from app.core.health import router as health_router
 from app.routes import auth, users, drive
 
 @asynccontextmanager
@@ -44,6 +45,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(drive.router)
+app.include_router(health_router)
 
 @app.get("/")
 async def root():

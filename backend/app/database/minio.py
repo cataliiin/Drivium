@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from minio import Minio
 from app.core.config import MINIO_BUCKET_NAME, MINIO_ENDPOINT, MINIO_USER, MINIO_PASS, MINIO_SECURE
 import logging
+import urllib3
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 from minio.error import S3Error
 
@@ -12,10 +13,16 @@ def init_minio_client():
     global minio_client
     if minio_client is None:
         try:
+            http_client = urllib3.PoolManager(
+                timeout=urllib3.Timeout(connect=2.0, read=3.0),
+                retries=urllib3.Retry(total=1, connect=1, read=1, backoff_factor=0.1),
+            )
+
             minio_client = Minio(MINIO_ENDPOINT,
                                 access_key=MINIO_USER,
                                 secret_key=MINIO_PASS,
-                                secure=MINIO_SECURE)
+                                secure=MINIO_SECURE,
+                                http_client=http_client)
             
             bucket = MINIO_BUCKET_NAME
             if not minio_client.bucket_exists(bucket):
