@@ -3,7 +3,7 @@
     import { fade } from 'svelte/transition';
     import { Plus, ChevronRight} from '@lucide/svelte';
     import type { FolderContentResponse } from '$lib/api/contracts';
-    import { listContentRoot, listContentFolder, createFolder, renameFile, deleteFile, renameFolder, deleteFolder } from '$lib/api/drive';
+    import { requestDownloadUrl, listContentRoot, listContentFolder, createFolder, renameFile, deleteFile, renameFolder, deleteFolder } from '$lib/api/drive';
     import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
 	import FolderRow from '$lib/components/FolderRow.svelte';
     import FileRow from '$lib/components/FileRow.svelte';
@@ -71,6 +71,21 @@
                     await fetchData(current_folder_id);
                 } catch (err) {
                     error = err instanceof Error ? err.message : 'Failed to delete item';
+                }
+                break;
+            case 'download':
+                try {
+                    if (!isFile) return;
+                    const data = await requestDownloadUrl(item.id);
+                    const link = document.createElement('a');
+                    link.href = data.url;
+                    link.setAttribute('download', item.name);
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (err) {
+                    error = err instanceof Error ? err.message : 'Failed to get download URL';
                 }
                 break;
         }
