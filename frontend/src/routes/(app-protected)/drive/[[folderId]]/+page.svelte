@@ -3,7 +3,8 @@
     import { fade } from 'svelte/transition';
     import { Plus, ChevronRight} from '@lucide/svelte';
     import type { FolderContentResponse } from '$lib/api/contracts';
-    import { requestDownloadUrl, listContentRoot, listContentFolder, createFolder, renameFile, deleteFile, renameFolder, deleteFolder } from '$lib/api/drive';
+    import { listContentRoot, listContentFolder} from '$lib/api/drive';
+    import { driveService } from '$lib/services/driveService.svelte';
     import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
 	import FolderRow from '$lib/components/FolderRow.svelte';
     import FileRow from '$lib/components/FileRow.svelte';
@@ -14,23 +15,12 @@
     import type { FolderResponse, FileResponse } from '$lib/api/contracts';
 	import TextInputModal from '$lib/components/TextInputModal.svelte';
 
-    let current_folder_id = $state<string | undefined>(undefined);
+    let { data } = $props();
 
-    let driveContent = $state<FolderContentResponse | null>(null);
-    let error = $state<string | null>(null);
-    
-    async function fetchData(id?: string) {
-        try {
-            driveContent = null;
-            if (id) {
-                driveContent = await listContentFolder(parseInt(id));
-            } else {
-                driveContent = await listContentRoot();
-            }
-        } catch (err) { 
-            error = err instanceof Error ? err.message : 'Failed to load drive contents';
-        }
-    }
+    let currentFolderId = $derived(page.params.folderId);
+
+    let driveContent = $derived(data.driveContent);
+    let error = $derived(data.error);
 
     // for DriveItemActionsMenu
     let menuOpen = $state(false);
@@ -62,31 +52,10 @@
                 isRenameModalOpen = true;
                 break;
             case 'delete':
-                try {
-                    if (isFile) {
-                        await deleteFile(item.id);
-                    } else {
-                        await deleteFolder(item.id);
-                    }
-                    await fetchData(current_folder_id);
-                } catch (err) {
-                    error = err instanceof Error ? err.message : 'Failed to delete item';
-                }
+                await driveService.deleteItem(item.id, isFile ? 'file' : 'folder');
                 break;
             case 'download':
-                try {
-                    if (!isFile) return;
-                    const data = await requestDownloadUrl(item.id);
-                    const link = document.createElement('a');
-                    link.href = data.url;
-                    link.setAttribute('download', item.name);
-
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                } catch (err) {
-                    error = err instanceof Error ? err.message : 'Failed to get download URL';
-                }
+                await driveService.downloadFile(item.id, item.name);
                 break;
         }
     }
@@ -94,49 +63,26 @@
     // Actions
     let isNewFolderModalOpen = $state(false);
     async function handleCreateFolder(newFolderName: string) {
-        try {
-            let parentId = current_folder_id ? parseInt(current_folder_id) : null;
-            if (parentId === 0) parentId = null;
-
-            await createFolder({ 
-                name: newFolderName, 
-                parent_folder_id: parentId 
-            });
-
+        const success = await driveService.createFolder(newFolderName, currentFolderId ? parseInt(currentFolderId) : null);
+        
+        if (success) {
             isNewFolderModalOpen = false;
-
-            await fetchData(current_folder_id);
-            
-        } catch (err) {
-            error = err instanceof Error ? err.message : 'Could not create folder';
         }
     }
 
     async function handleRename(newName: string) {
-        try {
-            if (!renameTargetId) return;
-
-            if (renameItemType === 'file') {
-                if (fileExtensionTargetFile && !newName.endsWith(`.${fileExtensionTargetFile}`)) {
-                    newName += `.${fileExtensionTargetFile}`;
-                }
-
-                await renameFile(renameTargetId, newName);
-            } else {
-                await renameFolder(renameTargetId, newName);
-            }
-
+        const success = await driveService.renameItem(
+            newName,
+            renameTargetId,
+            renameItemType,
+            fileExtensionTargetFile
+        );
+        
+        if (success) {
             isRenameModalOpen = false;
-            await fetchData(current_folder_id);
-        } catch (err) {
-            error = err instanceof Error ? err.message : 'Could not rename item';
         }
     }
 
-    $effect(() => {
-        current_folder_id = page.params.folderId;
-        fetchData(current_folder_id);
-    });
 </script>
 
 <div class="h-screen flex flex-col bg-surface-50-950 overflow-hidden font-sans text-surface-900-50">
