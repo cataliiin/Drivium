@@ -38,7 +38,7 @@ async def request_file_download(file_id: int,
                                 current_user = Depends(get_current_user)):
     
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES)
-    
+
     return FileDownloadResponse(
         url=drive_service.get_download_url(file_id, db, minio, current_user),
         expires_at=expires_at

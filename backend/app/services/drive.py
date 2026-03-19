@@ -115,11 +115,17 @@ class DriveService:
         
         object_name = f"users/{current_user.id}/{file.storage_key}"
         
+        response_headers = {
+            'response-content-disposition': f'attachment; filename="{self._get_file_name_for_download(db, current_user, file_id)}"',
+            'response-content-type': 'application/octet-stream'
+        }
+
         try:
             return minio.presigned_get_object(
                 bucket_name=self.BUCKET_NAME,
                 object_name=object_name,
-                expires=timedelta(minutes=PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES)
+                expires=timedelta(minutes=PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES),
+                response_headers=response_headers
             )
         except S3Error:
             raise HTTPException(503, "Object storage unavailable")
@@ -360,6 +366,15 @@ class DriveService:
         breadcrumbs.extend(reversed(path_stack))
         
         return [Breadcrumb(**b) for b in breadcrumbs]
+
+    def _get_file_name_for_download(self, db: Session, current_user: User, file_id: int) -> str:
+        file = db.query(File).filter(
+            File.id == file_id,
+            File.owner_id == current_user.id
+        ).first()
+        if not file:
+            raise HTTPException(404, "File not found or access denied")
+        return file.name
 
     def get_folder_content(self, db: Session, current_user: User, folder_id: int | None) -> FolderContentResponse:
         current_folder = None
