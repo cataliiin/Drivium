@@ -4,25 +4,23 @@
     import { Plus, ChevronRight} from '@lucide/svelte';
     import { driveService } from '$lib/services/driveService.svelte';
     import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
-	import FolderRow from '$lib/components/FolderRow.svelte';
+    import FolderRow from '$lib/components/FolderRow.svelte';
     import FileRow from '$lib/components/FileRow.svelte';
-	import DriveTableHead from '$lib/components/DriveTableHead.svelte';
-	import DriveBreadcrumbs from '$lib/components/DriveBreadcrumbs.svelte';
+    import DriveTableHead from '$lib/components/DriveTableHead.svelte';
+    import DriveBreadcrumbs from '$lib/components/DriveBreadcrumbs.svelte';
     import DriveLoadingPlaceholder from '$lib/components/DriveLoadingPlaceholder.svelte';
     import DriveItemActionsMenu from '$lib/components/DriveItemActionsMenu.svelte';
     import type { FolderResponse, FileResponse } from '$lib/api/contracts';
-	import TextInputModal from '$lib/components/TextInputModal.svelte';
+    import TextInputModal from '$lib/components/TextInputModal.svelte';
 
     let { data } = $props();
 
     let currentFolderId = $derived(page.params.folderId);
-
-    let driveContent = $derived(data.driveContent);
-    let error = $derived(data.error);
+    let driveContentPromise = $derived(data.streamed.driveContent);
 
     // for DriveItemActionsMenu
     let menuOpen = $state(false);
-    let menuTarget = $state(null);
+    let menuTarget = $state<any>(null);
     let menuType = $state('folder');
     let menuPos = $state({ x: 0, y: 0 });
 
@@ -53,7 +51,7 @@
                 await driveService.deleteItem(item.id, isFile ? 'file' : 'folder');
                 break;
             case 'download':
-                await driveService.downloadFile(item.id, item.name);
+                if (isFile) await driveService.downloadFile(item.id, item.name);
                 break;
         }
     }
@@ -72,7 +70,6 @@
             fileExtensionTargetFile
         );
     }
-
 </script>
 
 <div class="h-screen flex flex-col bg-surface-50-950 overflow-hidden font-sans text-surface-900-50">
@@ -80,21 +77,24 @@
     <header class="w-full px-6 h-16 flex items-center gap-4 shrink-0 z-10 border-b border-surface-500/10">
         <nav aria-label="Breadcrumb" class="flex-1">
             <ol class="flex items-center gap-2 text-sm">
-                {#if !driveContent && !error}
-                    <!-- Loading placeholder for breadcrumbs -->
-                    <li class="flex items-center gap-2 animate-pulse">
+                {#await driveContentPromise}
+                    <li class="flex items-center gap-2 animate-pulse list-none">
                         <div class="placeholder w-20 h-4 rounded-full"></div>
                         <ChevronRight class="size-4 opacity-20" />
                         <div class="placeholder w-32 h-4 rounded-full opacity-60"></div>
                     </li>
-                {:else if driveContent}
-                    <DriveBreadcrumbs path={driveContent.path} />
-                {/if}
+                {:then resolvedContent}
+                    {#if resolvedContent}
+                        <DriveBreadcrumbs path={resolvedContent.path} />
+                    {/if}
+                {/await}
             </ol>
         </nav>
 
-        <Menu >
-            <Menu.Trigger disabled={!driveContent} class="btn btn-sm preset-filled-primary-500 hover:preset-filled-primary-600 circle ml-auto disabled:opacity-50 disabled:cursor-not-allowed"><Plus class="size-6" /></Menu.Trigger>
+        <Menu>
+            <Menu.Trigger class="btn btn-sm preset-filled-primary-500 hover:preset-filled-primary-600 circle ml-auto">
+                <Plus class="size-6" />
+            </Menu.Trigger>
             <Portal>
                 <Menu.Positioner style="z-index: 9999;">
                     <Menu.Content>
@@ -111,26 +111,32 @@
     </header>
 
     <main class="flex-1 overflow-y-auto px-4">
-        {#if error}
-            <div class="p-10 text-center text-error-500 font-semibold">{error}</div>
-        {:else if !driveContent}
+        {#await driveContentPromise}
             <DriveLoadingPlaceholder />
-        {:else}
-            <div class="table-wrap py-3" in:fade={{ duration: 200 }}>
-                <table class="table table-fixed w-full border-collapse">
-                    <DriveTableHead />
-                    <tbody class="[&>tr]:hover:preset-tonal-primary transition-colors cursor-pointer border-separate">
-                        {#each driveContent.folders as folder}
-                            <FolderRow {folder} onRightClick={handleMenuOpen} />
-                        {/each}
+        {:then resolvedContent}
+            {#if resolvedContent}
+                <div class="table-wrap py-3" in:fade={{ duration: 200 }}>
+                    <table class="table table-fixed w-full border-collapse">
+                        <DriveTableHead />
+                        <tbody class="[&>tr]:hover:preset-tonal-primary transition-colors cursor-pointer border-separate">
+                            {#each resolvedContent.folders as folder}
+                                <FolderRow {folder} onRightClick={handleMenuOpen} />
+                            {/each}
 
-                        {#each driveContent.files as file}
-                            <FileRow {file} onRightClick={handleMenuOpen} />            
-                        {/each}
-                    </tbody>
-                </table>
+                            {#each resolvedContent.files as file}
+                                <FileRow {file} onRightClick={handleMenuOpen} />            
+                            {/each}
+                        </tbody>
+                    </table>
+                </div>
+            {:else}
+                <div class="p-10 text-center opacity-50">No content available.</div>
+            {/if}
+        {:catch error}
+            <div class="p-10 text-center text-error-500 font-semibold">
+                {error.message || 'Error loading drive content'}
             </div>
-        {/if}
+        {/await}
     </main>
 
     <footer class="w-full py-3 px-6 bg-surface-100-800 border-t border-surface-500/10 shrink-0">
@@ -142,7 +148,7 @@
     </footer>
 
     <TextInputModal title="New Folder" placeholder="Folder Name" bind:open={isNewFolderModalOpen} onSubmit={handleCreateFolder} />
-    <TextInputModal title="Rename Folder" placeholder="Folder Name" bind:open={isRenameModalOpen} onSubmit={handleRename} />
+    <TextInputModal title="Rename Item" placeholder="Name" bind:open={isRenameModalOpen} onSubmit={handleRename} />
 
     <DriveItemActionsMenu 
         bind:open={menuOpen} 
