@@ -57,10 +57,6 @@
     }
 
     // Actions
-    let isNewFolderModalOpen = $state(false);
-    async function handleCreateFolder(newFolderName: string) {
-        await driveService.createFolder(newFolderName, currentFolderId ? parseInt(currentFolderId) : null);
-    }
 
     async function handleRename(newName: string) {
         await driveService.renameItem(
@@ -91,23 +87,7 @@
             </ol>
         </nav>
 
-        <Menu>
-            <Menu.Trigger class="btn btn-sm preset-filled-primary-500 hover:preset-filled-primary-600 circle ml-auto">
-                <Plus class="size-6" />
-            </Menu.Trigger>
-            <Portal>
-                <Menu.Positioner style="z-index: 9999;">
-                    <Menu.Content>
-                        <Menu.Item value="new_folder" onclick={() => isNewFolderModalOpen = true}>
-                            <Menu.ItemText>New Folder</Menu.ItemText>
-                        </Menu.Item>
-                        <Menu.Item value="upload_file">
-                            <Menu.ItemText>Upload File</Menu.ItemText>
-                        </Menu.Item>
-                    </Menu.Content>
-                </Menu.Positioner>
-            </Portal>
-        </Menu>
+        
     </header>
 
     <main class="flex-1 overflow-y-auto px-4">
@@ -147,7 +127,6 @@
         </div>
     </footer>
 
-    <TextInputModal title="New Folder" placeholder="Folder Name" bind:open={isNewFolderModalOpen} onSubmit={handleCreateFolder} />
     <TextInputModal title="Rename Item" placeholder="Name" bind:open={isRenameModalOpen} onSubmit={handleRename} />
 
     <DriveItemActionsMenu 
