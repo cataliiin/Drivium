@@ -2,8 +2,6 @@
     import { page } from '$app/state';
     import { fade } from 'svelte/transition';
     import { Plus, ChevronRight} from '@lucide/svelte';
-    import type { FolderContentResponse } from '$lib/api/contracts';
-    import { listContentRoot, listContentFolder} from '$lib/api/drive';
     import { driveService } from '$lib/services/driveService.svelte';
     import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
 	import FolderRow from '$lib/components/FolderRow.svelte';
@@ -63,24 +61,16 @@
     // Actions
     let isNewFolderModalOpen = $state(false);
     async function handleCreateFolder(newFolderName: string) {
-        const success = await driveService.createFolder(newFolderName, currentFolderId ? parseInt(currentFolderId) : null);
-        
-        if (success) {
-            isNewFolderModalOpen = false;
-        }
+        await driveService.createFolder(newFolderName, currentFolderId ? parseInt(currentFolderId) : null);
     }
 
     async function handleRename(newName: string) {
-        const success = await driveService.renameItem(
+        await driveService.renameItem(
             newName,
             renameTargetId,
             renameItemType,
             fileExtensionTargetFile
         );
-        
-        if (success) {
-            isRenameModalOpen = false;
-        }
     }
 
 </script>
