@@ -9,7 +9,11 @@ export const load = ({ params }) => {
 
     return {
         streamed: {
-            driveContent: contentPromise
+            driveContent: contentPromise.catch((err) => {
+                
+                
+                // toast or idk
+            })
         }
     };
 };
