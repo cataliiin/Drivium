@@ -1,122 +1,175 @@
 <script lang="ts">
-	import { 
-		HardDrive, 
-		Upload, 
-		Share2, 
-		Lock, 
-		Code2, 
-		Database, 
-		ArrowRight 
-	} from '@lucide/svelte';
+    import { 
+        HardDrive, 
+        Lock, 
+        Code2, 
+        Database, 
+        Zap,
+        Github,
+        DatabaseZap,
+        GitBranch,
+    } from '@lucide/svelte';
 
-	let { data } = $props();
-	
-	let isLoggedIn = $derived(data.user_data?.is_logged_in ?? false);
-	let username = $derived(data.user_data?.username ?? '');
+    let { data } = $props();
+    
+    let isLoggedIn = $derived(data.user_data?.is_logged_in ?? false);
 </script>
 
 <svelte:head>
-	<title>Drivium - Cloud Storage</title>
-	<meta name="description" content="FastAPI + SvelteKit cloud storage. Secure, rapid, open source." />
+    <title>Drivium - Cloud Storage</title>
+    <meta name="description" content="FastAPI + SvelteKit cloud storage. Secure, rapid, open source." />
 </svelte:head>
 
-<section class="min-h-[90vh] bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900 relative overflow-hidden flex items-center">
-	<div class="absolute inset-0 pointer-events-none">
-		<div class="absolute top-20 right-20 w-72 h-72 bg-purple-500/10 rounded-full blur-xl animate-pulse"></div>
-		<div class="absolute bottom-32 left-20 w-96 h-96 bg-blue-500/5 rounded-3xl blur-2xl animate-pulse delay-1000"></div>
-	</div>
+<header class="min-h-[85vh] flex items-center relative overflow-hidden bg-surface-50-945">
+    <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-primary-500/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[10%] left-[-5%] w-96 h-96 bg-secondary-500/10 rounded-full blur-[120px]"></div>
+    </div>
 
-	<div class="container mx-auto px-6 relative z-10">
-		<div class="max-w-5xl mx-auto text-center">
-			<h1 class="text-6xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight">
-				<span class="bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent drop-shadow-2xl">
-					Drivium
-				</span>
-			</h1>
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-7xl md:text-9xl font-black mb-6 tracking-tighter">
+                Drivium
+            </h1>
 
-			<p class="text-4xl md:text-3xl mb-12 text-slate-260 max-w-3xl mx-auto leading-relaxed font-light">
-				Cloud storage built with FastAPI and SvelteKit<br/>Secure, fast, and open source
-			</p>
+            <p class="text-xl md:text-2xl mb-12 opacity-70 leading-relaxed font-light max-w-2xl mx-auto">
+                High-performance cloud storage<br> engineered with <span class="text-primary-500 font-medium">FastAPI</span> and <span class="text-secondary-500 font-medium">SvelteKit</span>.
+            </p>
 
-			<div class="flex flex-col lg:flex-row gap-6 justify-center items-center mb-20">
-				{#if isLoggedIn}
-					<a href="/drive" class="btn btn-xl preset-filled-surface-500 shadow-2xl group py-4 px-8">
-						<HardDrive class="w-6 h-6 mr-2 group-hover:rotate-12 transition-transform" />
-						My Drive ({username})
-					</a>
-				{:else}
-					<a href="/register" class="btn btn-xl preset-filled-primary-500 shadow-2xl group text-lg px-12 py-4">
-						Create Account
-					</a>
-					<a href="/login" class="btn btn-xl preset-outline-primary-500 shadow-xl text-lg px-12 py-4 bg-white/5">
-						Have an Account
-					</a>
-				{/if}
-			</div>
+            <div class="flex flex-wrap gap-4 justify-center items-center mb-16">
+                {#if isLoggedIn}
+                    <a href="/drive" class="btn btn-xl preset-filled-primary-500 shadow-xl group px-10">
+                        <HardDrive class="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
+                        Go to My Drive
+                    </a>
+                {:else}
+                    <a href="/register" class="btn btn-xl preset-filled-primary-500 shadow-xl px-12">Get Started</a>
+                    <a href="/login" class="btn btn-xl preset-outline-surface-500 px-12">Sign In</a>
+                {/if}
+            </div>
 
-			<div class="flex flex-wrap gap-6 justify-center items-center opacity-80 mb-8">
-				<div class="flex items-center gap-2 text-sm bg-slate-800/50 border border-white/10 px-4 py-2 rounded-full text-white">
-					<Code2 class="w-4 h-4 text-purple-400" />
-					FastAPI + PostgreSQL
-				</div>
-				<div class="flex items-center gap-2 text-sm bg-slate-800/50 border border-white/10 px-4 py-2 rounded-full text-white">
-					<Database class="w-4 h-4 text-blue-400" />
-					MinIO S3
-				</div>
-			</div>
-		</div>
-	</div>
+            <div class="flex flex-wrap gap-3 justify-center items-center">
+                <div class="badge variant-soft-surface py-2 px-4 border border-surface-500/20 flex gap-2">
+                    <Code2 size={16} class="text-purple-400" /> 
+                    <span class="opacity-80">FastAPI</span>
+                </div>
+                <div class="badge variant-soft-surface py-2 px-4 border border-surface-500/20 flex gap-2">
+                    <Database size={16} class="text-blue-400" /> 
+                    <span class="opacity-80">Postgres + MinIO</span>
+                </div>
+                <div class="badge variant-soft-surface py-2 px-4 border border-surface-500/20 flex gap-2">
+                    <Zap size={16} class="text-orange-500" /> 
+                    <span class="opacity-80">SvelteKit</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="py-24 bg-surface-100-800 border-t border-surface-500/5">
+    <div class="container mx-auto px-6">
+        <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            
+            <div class="card p-8 bg-surface-50-945 border border-surface-500/10">
+                <header class="mb-6">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-primary-500/20 text-primary-500">
+                        <DatabaseZap size={24} />
+                    </div>
+                </header>
+                <h3 class="text-xl font-bold mb-3">S3 Object Storage</h3>
+                <p class="opacity-70 text-sm leading-relaxed">Built on MinIO for high-performance BLOB storage. Optimized for consistency and rapid I/O operations.</p>
+            </div>
+
+            <div class="card p-8 bg-surface-50-945 border border-surface-500/10">
+                <header class="mb-6">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-secondary-500/20 text-secondary-500">
+                        <GitBranch size={24} />
+                    </div>
+                </header>
+                <h3 class="text-xl font-bold mb-3">Relational Metadata</h3>
+                <p class="opacity-70 text-sm leading-relaxed">PostgreSQL-backed folder structures ensuring atomic operations and directory tree traversal.</p>
+            </div>
+
+            <div class="card p-8 bg-surface-50-945 border border-surface-500/10">
+                <header class="mb-6">
+                    <div class="w-12 h-12 flex items-center justify-center rounded-xl bg-tertiary-500/20 text-tertiary-500">
+                        <Lock size={24} />
+                    </div>
+                </header>
+                <h3 class="text-xl font-bold mb-3">Secure Sessions</h3>
+                <p class="opacity-70 text-sm leading-relaxed">JWT authentication via HttpOnly cookies. Private access protected by industry-standard security layers.</p>
+            </div>
+
+        </div>
+    </div>
 </section>
 
-<section class="py-32 bg-slate-50">
-	<div class="container mx-auto px-6">
-		<div class="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-			<div class="card p-10 border-0 shadow-xl hover:shadow-purple-500/20 hover:-translate-y-2 transition-all duration-500 bg-white">
-				<div class="flex flex-col gap-6">
-					<div class="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl shadow-lg">
-						<Upload size={32} />
-					</div>
-					<h3 class="text-2xl font-black text-slate-900">Fast Uploads</h3>
-					<p class="text-slate-600">Drag & drop and chunked uploads.</p>
-				</div>
-			</div>
-
-			<div class="card p-10 border-0 shadow-xl hover:shadow-emerald-500/20 hover:-translate-y-2 transition-all duration-500 bg-white">
-				<div class="flex flex-col gap-6">
-					<div class="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-2xl shadow-lg">
-						<Share2 size={32} />
-					</div>
-					<h3 class="text-2xl font-black text-slate-900">Sharing</h3>
-					<p class="text-slate-600">Share files with others via secure links.</p>
-				</div>
-			</div>
-
-			<div class="card p-10 border-0 shadow-xl hover:shadow-orange-500/20 hover:-translate-y-2 transition-all duration-500 bg-white">
-				<div class="flex flex-col gap-6">
-					<div class="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-2xl shadow-lg">
-						<Lock size={32} />
-					</div>
-					<h3 class="text-2xl font-black text-slate-900">Security</h3>
-					<p class="text-slate-600">Audit logs and JWT HTTP-only.</p>
-				</div>
-			</div>
-		</div>
-	</div>
+<section class="py-20 bg-surface-50-945 border-t border-surface-500/5">
+    <div class="container mx-auto px-6">
+        <div class="card p-12 max-w-4xl mx-auto bg-gradient-to-b from-surface-500/5 to-transparent border border-surface-500/10 flex flex-col items-center text-center">
+            <div class="bg-surface-900 rounded-full p-4 mb-6 shadow-2xl border border-surface-500/20">
+                <Github size={48} />
+            </div>
+            <h2 class="text-3xl font-bold mb-4 text-white">Open Source</h2>
+            <p class="opacity-70 mb-8 max-w-lg">Explore the code or deploy your own instance.</p>
+            <a href="https://github.com/cataliiin/Drivium" target="_blank" rel="noopener noreferrer" class="btn preset-filled-surface-500 font-bold px-8">
+                <Github size={18} class="mr-2" /> View Repository
+            </a>
+        </div>
+    </div>
 </section>
 
-<section class="py-32 bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 text-white">
-	<div class="container mx-auto px-6 text-center">
-		<h2 class="text-5xl font-black mb-8">Ready to Get Started?</h2>
-		<div class="flex flex-col md:flex-row gap-6 justify-center">
-			{#if isLoggedIn}
-				<a href="/drive" class="btn btn-xl preset-filled-primary-500 px-12 py-4">
-					<HardDrive class="w-7 h-7 mr-3" /> My Drive
-				</a>
-			{:else}
-				<a href="/register" class="btn btn-xl preset-filled-secondary-500 px-12 py-4">
-					<ArrowRight class="w-7 h-7 mr-3" /> Create Account
-				</a>
-			{/if}
-		</div>
-	</div>
-</section>
+<footer class="py-16 bg-surface-100-800 border-t border-surface-500/10">
+    <div class="container mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-18 max-w-6xl mx-auto">
+            
+            <div class="col-span-1 md:col-span-1">
+                <h3 class="text-xl font-black tracking-tighter mb-4">Drivium</h3>
+				
+            </div>
+
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-widest mb-4 opacity-40">Core Stack</h4>
+                <ul class="space-y-2 text-sm opacity-70">
+                    <li class="flex items-center gap-2">
+                        <span class="w-1 h-1 bg-primary-500 rounded-full"></span> SvelteKit 5 (Runes)
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="w-1 h-1 bg-primary-500 rounded-full"></span> FastAPI (Asynchronous)
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="w-1 h-1 bg-primary-500 rounded-full"></span> PostgreSQL (JSONB)
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <span class="w-1 h-1 bg-primary-500 rounded-full"></span> MinIO S3 Storage
+                    </li>
+                </ul>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <h4 class="text-xs font-bold uppercase tracking-widest mb-4 opacity-40">Resources</h4>
+                <a href="https://github.com/cataliiin/Drivium" target="_blank" class="text-sm hover:text-primary-500 transition-colors flex items-center gap-2">
+                    <Github size={14} /> Source Code
+                </a>
+                <a href="/privacy-policy" class="text-sm hover:text-primary-500 transition-colors flex items-center gap-2">
+                    <Lock size={14} /> Privacy Policy
+                </a>
+            </div>
+        </div>
+
+        <div class="mt-16 pt-8 border-t border-surface-500/5 flex flex-col md:row justify-between items-center gap-4">
+            <p class="text-[10px] font-mono opacity-30 uppercase tracking-[0.2em]">
+                &copy; {new Date().getFullYear()} Drivium Project
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    h1 {
+        background: linear-gradient(to bottom right, #FFFFFF 30%, rgba(255,255,255,0.2) 100%);
+        -webkit-background-clip: text;
+		-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+</style>
