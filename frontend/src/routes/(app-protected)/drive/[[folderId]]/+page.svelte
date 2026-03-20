@@ -94,7 +94,7 @@
         {#await driveContentPromise}
             <DriveLoadingPlaceholder />
         {:then resolvedContent}
-            {#if resolvedContent}
+            {#if resolvedContent && (resolvedContent.folders.length > 0 || resolvedContent.files.length > 0)}
                 <div class="table-wrap py-3" in:fade={{ duration: 200 }}>
                     <table class="table table-fixed w-full border-collapse">
                         <DriveTableHead />
@@ -110,7 +110,11 @@
                     </table>
                 </div>
             {:else}
-                <div class="p-10 text-center opacity-50">No content available.</div>
+                {#if currentFolderId === undefined}
+                    <div class="p-10 text-center opacity-50">Your drive is empty</div>
+                {:else}
+                <div class="p-10 text-center opacity-50">This folder is empty</div>
+                {/if}
             {/if}
         {:catch error}
             <div class="p-10 text-center text-error-500 font-semibold">
@@ -118,14 +122,6 @@
             </div>
         {/await}
     </main>
-
-    <footer class="w-full py-3 px-6 bg-surface-100-800 border-t border-surface-500/10 shrink-0">
-        <div class="flex items-center justify-center gap-6 text-xs font-medium opacity-60 text-center">
-              <span>Total storage used: <strong class="text-surface-900-50">3.2 GB</strong></span>
-              <span class="h-3 w-[1px] bg-surface-500/30"></span>
-              <span>Folder size: <strong class="text-surface-900-50">51.5 MB</strong></span>
-        </div>
-    </footer>
 
     <TextInputModal title="Rename Item" placeholder="Name" bind:open={isRenameModalOpen} onSubmit={handleRename} />
 
