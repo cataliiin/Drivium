@@ -1,9 +1,8 @@
 <script lang="ts">
     import { page } from '$app/state';
     import { fade } from 'svelte/transition';
-    import { Plus, ChevronRight} from '@lucide/svelte';
+    import { ChevronRight} from '@lucide/svelte';
     import { driveService } from '$lib/services/driveService.svelte';
-    import { Menu, Portal } from '@skeletonlabs/skeleton-svelte';
     import FolderRow from '$lib/components/FolderRow.svelte';
     import FileRow from '$lib/components/FileRow.svelte';
     import DriveTableHead from '$lib/components/DriveTableHead.svelte';
