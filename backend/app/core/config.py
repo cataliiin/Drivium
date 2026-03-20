@@ -55,7 +55,7 @@ ALLOWED_MIME_TYPES_DEFAULT = [
     "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
     "image/bmp", "image/tiff", "image/x-icon", "image/heic", "application/postscript",
     "image/vnd.adobe.photoshop", "image/x-adobe-dng", "application/x-indesign",
-    "application/dwg", "application/dxf", # AutoCAD
+    "application/dwg", "application/dxf",
 
     "application/pdf", "text/plain", "text/csv", "text/markdown", "application/rtf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -66,6 +66,7 @@ ALLOWED_MIME_TYPES_DEFAULT = [
 
     "application/zip", "application/x-zip-compressed", "application/x-7z-compressed",
     "application/vnd.rar", "application/x-rar-compressed", "application/gzip", "application/x-tar",
+    "application/x-compressed",
 
     "audio/mpeg", "audio/wav", "audio/ogg", "audio/aac", "audio/flac", "audio/x-m4a",
     "video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-msvideo", "video/x-matroska",
