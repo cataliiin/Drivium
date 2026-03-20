@@ -33,41 +33,44 @@ CORS_ALLOW_HEADERS = ["*"]
 MAX_FILE_SIZE_BYTES = int(os.getenv("MAX_FILE_SIZE_BYTES", str(10 * 1024 * 1024 * 1024)))  # 10 GB default
 
 ALLOWED_MIME_TYPES_DEFAULT = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png", 
-    "image/gif",
-    "image/webp",
-    "image/svg+xml",
-    "image/bmp",
-    "image/tiff",
+    "application/x-msdownload", "application/x-msi", "application/x-executable",
+    "application/x-apple-diskimage", "application/x-debian-package", 
+    "application/x-redhat-package-manager", "application/x-ms-shortcut",
+    "application/octet-stream",
 
-    "application/pdf",
-    "text/plain",
-    "text/csv",
-    "text/markdown",
+    "application/x-blender", "model/obj", "model/mtl", "model/gltf+json", 
+    "model/gltf-binary", "application/x-maya", "application/x-fbx", 
+    "application/vmd.ms-pki.stl", "text/x-godot-scene", "text/x-gdscript",
+    "application/x-unity-package", "application/x-unreal-engine", "text/x-csharp",
 
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # .docx
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",       # .xlsx
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation", # .pptx
-    "application/msword",           # .doc
-    "application/vnd.ms-excel",     # .xls
-    "application/vnd.ms-powerpoint",# .ppt
-    "application/vnd.oasis.opendocument.text",      # .odt
-    "application/vnd.oasis.opendocument.spreadsheet", # .ods
-    "application/vnd.oasis.opendocument.presentation", # .odp
+    "text/x-python", "text/x-python-script", "application/x-python-code",
+    "text/x-csrc", "text/x-chdr", "text/x-c++src", "text/x-c++hdr",
+    "text/x-java-source", "application/java-archive", "text/javascript", 
+    "application/javascript", "text/typescript", "text/css", "text/html", 
+    "application/json", "application/xml", "text/xml", "text/x-php", 
+    "application/x-php", "text/x-ruby", "text/x-shellscript", "text/x-perl", 
+    "text/x-rustsrc", "text/x-yaml", "application/x-yaml", "application/toml",
+    "text/x-go", "text/x-swift", "text/x-kotlin", "application/wasm",
 
-    "application/zip",
-    "application/x-zip-compressed",
-    "application/gzip",
-    
-    "audio/mpeg",
-    "audio/wav",
-    "audio/ogg",
-    
-    "video/mp4",
-    "video/webm",
-    "video/ogg",
+    "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
+    "image/bmp", "image/tiff", "image/x-icon", "image/heic", "application/postscript",
+    "image/vnd.adobe.photoshop", "image/x-adobe-dng", "application/x-indesign",
+    "application/dwg", "application/dxf", # AutoCAD
+
+    "application/pdf", "text/plain", "text/csv", "text/markdown", "application/rtf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/msword", "application/vnd.ms-excel", "application/vnd.ms-powerpoint",
+    "application/vnd.oasis.opendocument.text", "application/vnd.oasis.opendocument.spreadsheet",
+
+    "application/zip", "application/x-zip-compressed", "application/x-7z-compressed",
+    "application/vnd.rar", "application/x-rar-compressed", "application/gzip", "application/x-tar",
+
+    "audio/mpeg", "audio/wav", "audio/ogg", "audio/aac", "audio/flac", "audio/x-m4a",
+    "video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-msvideo", "video/x-matroska",
+
+    "application/x-sqlite3", "application/sql", "font/ttf", "font/otf", "font/woff", "font/woff2"
 ]
 
 ALLOWED_MIME_TYPES: List[str] = os.getenv("ALLOWED_MIME_TYPES", ",".join(ALLOWED_MIME_TYPES_DEFAULT)).split(",")
