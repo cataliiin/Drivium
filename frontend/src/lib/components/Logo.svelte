@@ -30,11 +30,16 @@
 
 <style>
     .logo-texture-gradient {
-        background: linear-gradient(-50deg, rgb(48, 48, 48) 0%, rgb(66, 66, 66) 12%, #EEEEEE 85%, #FFFFFF 100%);
+        /* Am combinat unghiul tău preferat (-50deg) cu noul stil de culori */
+        background: linear-gradient(-50deg, rgba(255, 255, 255, 0.4) 0%, #FFFFFF 70%);
+        
+        /* Esențial pentru ca gradientul să se aplice doar pe text */
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
-        color: transparent;
+        
+        /* Compatibilitate */
         display: inline-block;
+        color: transparent;
     }
 </style>

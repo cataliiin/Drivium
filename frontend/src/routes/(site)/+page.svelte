@@ -29,8 +29,8 @@
 
     <div class="container mx-auto px-6 relative z-10">
         <div class="max-w-4xl mx-auto text-center">
-            <div class="flex justify-center mb-6">
-                <Logo size={90} showDot={true}  />
+            <div class="flex justify-center mb-10">
+                <Logo size={110} showDot={true} />
 
             </div>
 
