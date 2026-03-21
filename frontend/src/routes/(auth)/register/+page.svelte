@@ -19,7 +19,7 @@
             <label class="flex items-start space-x-3 p-2 cursor-pointer group">
                 <input class="w-5 h-5 rounded border-white/10 bg-white/5 text-primary-500 focus:ring-primary-500/20 mt-0.5 transition-all" type="checkbox" required/>
                 <span class="text-xs text-slate-400 group-hover:text-slate-300 leading-tight">
-                    I agree to the <a href="/privacy-policy" class="text-primary-500 hover:text-primary-400 font-bold underline decoration-primary-500/30 transition-colors">Privacy Policy</a>
+                    I agree to the <a href="/privacy-policy" class="text-primary-500 hover:text-primary-400 font-bold underline decoration-primary-500/30 transition-colors">Privacy Policy</a> and <a href="/terms-of-service" class="text-primary-500 hover:text-primary-400 font-bold underline decoration-primary-500/30 transition-colors">Terms of Service</a>
                 </span>
             </label>
         </div>

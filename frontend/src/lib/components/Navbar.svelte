@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { HardDrive, LogOut, Settings, ChevronDown } from '@lucide/svelte';
+    import { HardDrive, LogOut, User2Icon, ChevronDown } from '@lucide/svelte';
     import { AppBar, Menu, Portal } from '@skeletonlabs/skeleton-svelte';
     import Logo from '$lib/components/Logo.svelte';
     import { enhance } from '$app/forms';
@@ -35,8 +35,8 @@
                                 <Menu.Content class="min-w-[200px] z-[9999] relative">
                                     
                                     <Menu.Item value="settings" class="flex items-center w-full px-3 py-2 rounded-lg hover:bg-surface-800 transition-colors cursor-pointer group">
-                                        <span class="text-sm flex-1 text-left">Settings</span>
-                                        <Settings size={16} class="opacity-40 group-hover:opacity-100 transition-opacity" />
+                                        <a href="/account" class="text-sm flex-1 text-left">My Account</a>
+                                        <User2Icon size={16} class="opacity-40 group-hover:opacity-100 transition-opacity" />
                                     </Menu.Item>
 
                                     <hr class="border-white/5 my-1" />

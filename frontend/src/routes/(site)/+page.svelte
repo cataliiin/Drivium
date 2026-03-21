@@ -8,6 +8,7 @@
         Github,
         DatabaseZap,
         GitBranch,
+        FileText
     } from '@lucide/svelte';
     import Logo from '$lib/components/Logo.svelte';
 
@@ -159,11 +160,13 @@
                 <a href="/privacy-policy" class="text-sm hover:text-primary-500 transition-colors flex items-center gap-2">
                     <Lock size={14} /> Privacy Policy
                 </a>
+                <a href="/terms-of-service" class="text-sm hover:text-primary-500 transition-colors flex items-center gap-2">
+                    <FileText size={14} /> Terms of Service
+                </a>
             </div>
         </div>
 
         <div class="mt-16 pt-8 border-t border-surface-500/5 flex flex-col md:row justify-between items-center gap-4">
-                <p class="text-slate-500 text-sm font-medium tracking-wide uppercase opacity-50">Visual Glaze prompted into existence</p>
 
             <p class="text-[10px] font-mono opacity-30 uppercase tracking-[0.2em]">
                 &copy; {new Date().getFullYear()} Drivium Project

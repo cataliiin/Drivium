@@ -14,7 +14,7 @@
 
         <p><strong>Privacy Policy – Drivium</strong></p>
 
-        <p>Last updated: 20.03.2026</p>
+        <p>Last updated: 21.03.2026</p>
 
         <p>Drivium is an open-source cloud storage application operated by an individual developer based in the European Union.</p>
 
