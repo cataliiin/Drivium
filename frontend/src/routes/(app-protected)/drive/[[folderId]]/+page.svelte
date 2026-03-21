@@ -1,13 +1,12 @@
 <script lang="ts">
     import { page } from '$app/state';
     import { fade } from 'svelte/transition';
-    import { ChevronRight} from '@lucide/svelte';
+    import { ChevronRight, FileIcon} from '@lucide/svelte';
     import { driveService } from '$lib/services/driveService.svelte';
     import FolderRow from '$lib/components/FolderRow.svelte';
     import FileRow from '$lib/components/FileRow.svelte';
     import DriveTableHead from '$lib/components/DriveTableHead.svelte';
     import DriveBreadcrumbs from '$lib/components/DriveBreadcrumbs.svelte';
-    import DriveLoadingPlaceholder from '$lib/components/DriveLoadingPlaceholder.svelte';
     import DriveItemActionsMenu from '$lib/components/DriveItemActionsMenu.svelte';
     import type { FolderResponse, FileResponse } from '$lib/api/contracts';
     import TextInputModal from '$lib/components/TextInputModal.svelte';
@@ -67,17 +66,17 @@
     }
 </script>
 
-<div class="h-screen flex flex-col bg-surface-50-950 overflow-hidden font-sans text-surface-900-50">
+<div class="h-full flex flex-col bg-transparent overflow-hidden">
     
-    <header class="w-full px-6 h-16 flex items-center gap-4 shrink-0 z-10 border-b border-surface-500/10">
-        <nav aria-label="Breadcrumb" class="flex-1">
-            <ol class="flex items-center gap-2 text-sm">
+    <header class="w-full px-8 h-20 flex items-center shrink-0 border-b border-white/5 bg-surface-950/20 backdrop-blur-sm">
+        <nav aria-label="Breadcrumb">
+            <ol class="flex items-center gap-3">
                 {#await driveContentPromise}
-                    <li class="flex items-center gap-2 animate-pulse list-none">
-                        <div class="placeholder w-20 h-4 rounded-full"></div>
-                        <ChevronRight class="size-4 opacity-20" />
-                        <div class="placeholder w-32 h-4 rounded-full opacity-60"></div>
-                    </li>
+                    <div class="flex items-center gap-2 animate-pulse">
+                        <div class="w-24 h-4 bg-white/5 rounded-full"></div>
+                        <ChevronRight size={14} class="opacity-20" />
+                        <div class="w-32 h-4 bg-white/5 rounded-full"></div>
+                    </div>
                 {:then resolvedContent}
                     {#if resolvedContent}
                         <DriveBreadcrumbs path={resolvedContent.path} />
@@ -85,23 +84,20 @@
                 {/await}
             </ol>
         </nav>
-
-        
     </header>
 
-    <main class="flex-1 overflow-y-auto px-4">
+    <main class="flex-1 overflow-y-auto custom-scrollbar relative z-10 bg-surface-950/20">
         {#await driveContentPromise}
-            <DriveLoadingPlaceholder />
+            <div class="w-full h-1 bg-primary-500/20 animate-pulse"></div>
         {:then resolvedContent}
             {#if resolvedContent && (resolvedContent.folders.length > 0 || resolvedContent.files.length > 0)}
-                <div class="table-wrap py-3" in:fade={{ duration: 200 }}>
-                    <table class="table table-fixed w-full border-collapse">
+                <div class="w-full" in:fade={{ duration: 100 }}>
+                    <table class="w-full border-collapse table-fixed select-none">
                         <DriveTableHead />
-                        <tbody class="[&>tr]:hover:preset-tonal-primary transition-colors cursor-pointer border-separate">
+                        <tbody class="bg-transparent">
                             {#each resolvedContent.folders as folder}
                                 <FolderRow {folder} onRightClick={handleMenuOpen} />
                             {/each}
-
                             {#each resolvedContent.files as file}
                                 <FileRow {file} onRightClick={handleMenuOpen} />            
                             {/each}
@@ -109,21 +105,14 @@
                     </table>
                 </div>
             {:else}
-                {#if currentFolderId === undefined}
-                    <div class="p-10 text-center opacity-50">Your drive is empty</div>
-                {:else}
-                <div class="p-10 text-center opacity-50">This folder is empty</div>
-                {/if}
+                <div class="h-full flex items-center justify-center opacity-20 text-[10px] uppercase tracking-widest">
+                    Empty Folder
+                </div>
             {/if}
-        {:catch error}
-            <div class="p-10 text-center text-error-500 font-semibold">
-                {error.message || 'Error loading drive content'}
-            </div>
         {/await}
     </main>
 
     <TextInputModal title="Rename Item" placeholder="Name" bind:open={isRenameModalOpen} onSubmit={handleRename} />
-
     <DriveItemActionsMenu 
         bind:open={menuOpen} 
         activeItem={menuTarget} 
@@ -131,14 +120,18 @@
         pos={menuPos}
         onAction={(action: string, item: any) => handleItemMenuAction(action, item)} 
     />
-
 </div>
 
 <style>
-    .table-wrap {
-        width: 100%;
+    /* Scrollbar ultra-discret pentru zona de main */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
     }
-    table {
-        table-layout: fixed;
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.1);
     }
 </style>

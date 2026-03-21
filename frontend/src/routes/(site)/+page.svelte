@@ -9,6 +9,7 @@
         DatabaseZap,
         GitBranch,
     } from '@lucide/svelte';
+    import Logo from '$lib/components/Logo.svelte';
 
     let { data } = $props();
     
@@ -28,9 +29,10 @@
 
     <div class="container mx-auto px-6 relative z-10">
         <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-7xl md:text-9xl font-black mb-6 tracking-tighter">
-                Drivium
-            </h1>
+            <div class="flex justify-center mb-6">
+                <Logo size={90} showDot={true}  />
+
+            </div>
 
             <p class="text-xl md:text-2xl mb-12 opacity-70 leading-relaxed font-light max-w-2xl mx-auto">
                 High-performance cloud storage<br> engineered with <span class="text-primary-500 font-medium">FastAPI</span> and <span class="text-secondary-500 font-medium">SvelteKit</span>.
@@ -44,7 +46,7 @@
                     </a>
                 {:else}
                     <a href="/register" class="btn btn-xl preset-filled-primary-500 shadow-xl px-12">Get Started</a>
-                    <a href="/login" class="btn btn-xl preset-outline-surface-500 px-12">Sign In</a>
+                   <a href="/login" class="btn btn-xl border-2 border-surface-500 px-12">Login</a>
                 {/if}
             </div>
 
@@ -124,21 +126,24 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-18 max-w-6xl mx-auto">
             
             <div class="col-span-1 md:col-span-1">
-                <h3 class="text-xl font-black tracking-tighter mb-4">Drivium</h3>
-				
+                <div class="mb-4"> <Logo size={30} showDot={true} />
+                </div>
+                <p class="text-slate-500 text-[10px] font-bold tracking-[0.2em] uppercase opacity-50">
+                    Cloud Storage Engineered
+                </p>
             </div>
 
             <div>
                 <h4 class="text-xs font-bold uppercase tracking-widest mb-4 opacity-40">Core Stack</h4>
                 <ul class="space-y-2 text-sm opacity-70">
                     <li class="flex items-center gap-2">
-                        <span class="w-1 h-1 bg-primary-500 rounded-full"></span> SvelteKit 5 (Runes)
+                        <span class="w-1 h-1 bg-primary-500 rounded-full"></span> SvelteKit 5
                     </li>
                     <li class="flex items-center gap-2">
-                        <span class="w-1 h-1 bg-primary-500 rounded-full"></span> FastAPI (Asynchronous)
+                        <span class="w-1 h-1 bg-primary-500 rounded-full"></span> FastAPI
                     </li>
                     <li class="flex items-center gap-2">
-                        <span class="w-1 h-1 bg-primary-500 rounded-full"></span> PostgreSQL (JSONB)
+                        <span class="w-1 h-1 bg-primary-500 rounded-full"></span> PostgreSQL
                     </li>
                     <li class="flex items-center gap-2">
                         <span class="w-1 h-1 bg-primary-500 rounded-full"></span> MinIO S3 Storage
@@ -158,18 +163,12 @@
         </div>
 
         <div class="mt-16 pt-8 border-t border-surface-500/5 flex flex-col md:row justify-between items-center gap-4">
+                <p class="text-slate-500 text-sm font-medium tracking-wide uppercase opacity-50">Visual Glaze prompted into existence</p>
+
             <p class="text-[10px] font-mono opacity-30 uppercase tracking-[0.2em]">
                 &copy; {new Date().getFullYear()} Drivium Project
             </p>
+            
         </div>
     </div>
 </footer>
-
-<style>
-    h1 {
-        background: linear-gradient(to bottom right, #FFFFFF 30%, rgba(255,255,255,0.2) 100%);
-        -webkit-background-clip: text;
-		-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-</style>

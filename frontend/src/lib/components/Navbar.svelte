@@ -1,61 +1,75 @@
 <script lang="ts">
-	import { HardDrive, UserIcon, LogIn, UserRoundPlus, LogOut, Settings } from '@lucide/svelte';
-	import { AppBar, Menu, Portal } from '@skeletonlabs/skeleton-svelte';
+    import { HardDrive, LogOut, Settings, ChevronDown } from '@lucide/svelte';
+    import { AppBar, Menu, Portal } from '@skeletonlabs/skeleton-svelte';
+    import Logo from '$lib/components/Logo.svelte';
     import { enhance } from '$app/forms';
 
     let { is_logged_in } = $props();
 </script>
 
-<AppBar class="">
-	<AppBar.Toolbar class="grid-cols-[auto_1fr_auto]  opacity-100">
-		<AppBar.Lead>
-		</AppBar.Lead>
-		<AppBar.Headline>
-			<p class="text-4xl font-bold">Drivium</p>
-		</AppBar.Headline>
-		<AppBar.Trail>
-        {#if is_logged_in}
-			<a href="/drive" type="button" class="btn hover:preset-tonal">My drive<HardDrive class="size-6" /></a>
-            <Menu>
-                <Menu.Trigger class="btn hover:preset-tonal">Account<UserIcon class="size-6" /></Menu.Trigger>
-                <Portal>
-                    <Menu.Positioner>
-                        <Menu.Content>
-                            <Menu.Item value="settings" class="w-full">
-                            <Menu.ItemText class="w-full">
-                                <div class="flex items-center justify-between w-full gap-4">
-                                <span>Settings</span>
-                                <Settings class="size-6 shrink-0" />
-                                </div>
-                            </Menu.ItemText>
-                            </Menu.Item>
+<AppBar class="bg-surface-950/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-[40]">
+    <AppBar.Toolbar class="grid-cols-[auto_1fr_auto] items-center px-6 md:px-12 py-3">
+        
+        <AppBar.Lead>
+            <Logo size={28} showDot={true} />
+        </AppBar.Lead>
 
-                            <Menu.Separator />
+        <AppBar.Headline></AppBar.Headline>
 
-                            <Menu.Item value="logout" class="w-full">
-                            <Menu.ItemText class="w-full relative">
-                                <div class="flex items-center justify-between w-full gap-4">
-                                <span>Logout</span>
-                                <LogOut class="size-6 shrink-0" />
-                                </div>
-                                
-                                <form method="POST" action="/logout?/logout" use:enhance class="absolute inset-0">
-                                <button type="submit" aria-label="Logout" class="absolute inset-0 w-full h-full bg-transparent border-none cursor-pointer opacity-0 hover:opacity-0 active:opacity-0" style="pointer-events: auto;"></button>
-                                </form>
-                            </Menu.ItemText>
-                            </Menu.Item>
+        <AppBar.Trail>
+            <div class="flex items-center gap-8">
+                {#if is_logged_in}
+                    <a href="/drive" class="flex items-center gap-2 text-sm font-medium opacity-70 hover:opacity-100 hover:text-primary-500 transition-all">
+                        <HardDrive size={18} strokeWidth={2.5} />
+                        <span class="hidden sm:inline">My Drive</span>
+                    </a>
+                    
+                    <Menu positioning={{ strategy: 'fixed', placement: 'bottom-end', gutter: 12 }}>
+                        <Menu.Trigger class="flex items-center gap-1 text-sm font-medium opacity-70 hover:opacity-100 transition-all outline-none">
+                            <span>Account</span>
+                            <ChevronDown size={14} class="opacity-50" />
+                        </Menu.Trigger>
+                        
+                        <Portal>
+                            <Menu.Positioner class="z-[9999]">
+                                <Menu.Content class="min-w-[200px] z-[9999] relative">
+                                    
+                                    <Menu.Item value="settings" class="flex items-center w-full px-3 py-2 rounded-lg hover:bg-surface-800 transition-colors cursor-pointer group">
+                                        <span class="text-sm flex-1 text-left">Settings</span>
+                                        <Settings size={16} class="opacity-40 group-hover:opacity-100 transition-opacity" />
+                                    </Menu.Item>
 
-                        </Menu.Content>
-                    </Menu.Positioner>
-                </Portal>
-            </Menu>
-        {:else}
-            <a href="/login" type="button" class="btn hover:preset-tonal">Login<LogIn class="size-6" /></a>
-            <div>
-                <span class="vr border-l-2"></span>
+                                    <hr class="border-white/5 my-1" />
+
+                                    <Menu.Item value="logout" class="relative w-full group">
+                                        <div class="flex items-center w-full px-2 py-2 rounded-lg hover:bg-error-500/10 text-error-500 transition-colors">
+                                            <span class="text-sm flex-1 text-left font-medium">Logout</span>
+                                            <LogOut size={16} class="shrink-0" />
+                                        </div>
+                                        <form method="POST" action="/logout?/logout" use:enhance class="absolute inset-0">
+                                            <button type="submit" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></button>
+                                        </form>
+                                    </Menu.Item>
+
+                                </Menu.Content>
+                            </Menu.Positioner>
+                        </Portal>
+                    </Menu>
+                {:else}
+                    <a href="/login" class="text-sm font-medium opacity-60 hover:opacity-100 transition-all">
+                        Login
+                    </a>
+                    <a href="/register" class="text-sm font-bold text-primary-500 hover:text-primary-400 transition-all">
+                        Register
+                    </a>
+                {/if}
             </div>
-            <a href="/register" type="button" class="btn hover:preset-tonal">Register<UserRoundPlus class="size-6" /></a>
-        {/if}
-		</AppBar.Trail>
-	</AppBar.Toolbar>
+        </AppBar.Trail>
+    </AppBar.Toolbar>
 </AppBar>
+
+<style>
+    :global(.app-bar), :global(.app-bar-toolbar) {
+        overflow: visible !important;
+    }
+</style>
