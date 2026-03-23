@@ -15,6 +15,10 @@ export const actions: Actions = {
         if (!username || !password || !email || !confirm_password) {
             return fail(400, { message: 'All fields are required', invalid: true });
         }
+        
+        if (password.length < 8) {
+            return fail(400, { message: 'Password must be at least 8 characters long', invalid: true });
+        }
 
         if (password !== confirm_password) {
             return fail(400, { message: 'Passwords do not match', invalid: true });
@@ -38,8 +42,14 @@ export const actions: Actions = {
             });
 
         } catch (error: any) {
-            const errorMessage = error.response?.data?.detail || 'Registration failed. Please try again.';
-            return fail(error.status || 400, { message: errorMessage, registration: true });
+            let errorMessage = error.message?.replace('Error: ', '') 
+                               || error.response?.data?.detail 
+                               || 'Registration failed. Please try again.';
+
+            return fail(error.status || 400, { 
+                message: errorMessage, 
+                registration: true 
+            });
         }
 
         throw redirect(303, '/drive');

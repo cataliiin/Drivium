@@ -1,5 +1,6 @@
 import { invalidateAll } from '$app/navigation';
 import { createFolder, renameFile, renameFolder, deleteFile, deleteFolder, requestDownloadUrl, uploadFileRequest, confirmFileUpload } from '$lib/api/drive';
+import { toastService } from '$lib/services/toastService.svelte';
 
 interface UploadItem {
     id: string;
@@ -62,9 +63,8 @@ class DriveService {
 
             this.uploadQueue = this.uploadQueue.filter(u => u.id !== nextItem.id);
             await invalidateAll();
-            // toast: Upload completed successfully 
         } catch (err) {
-            // toast
+            toastService.error({ title: 'Upload Failed', description: 'There was an error uploading your file. Please try again.' });
             console.error("Upload error:", err);
 
             this.uploadQueue = this.uploadQueue.filter(u => u.id !== nextItem.id);
@@ -129,7 +129,7 @@ class DriveService {
             
             return true;
         } catch (err: any) {
-            // toast : Error downloading file
+            toastService.error({ title: 'Download Failed', description: 'There was an error downloading your file.' });
             return false;
         }
     }
@@ -146,10 +146,9 @@ class DriveService {
 
 
             await invalidateAll();
-            // toast : Folder created successfully
             return true;
         } catch (err) {
-            // toast : Error creating folder
+            toastService.error({ title: 'Creation Failed', description: 'There was an error creating the folder.' });
             return false;
         }
     }
@@ -170,10 +169,9 @@ class DriveService {
             }
 
             await invalidateAll();
-            // toast : Item renamed successfully
             return true;
         } catch (err) {
-            // toast : Error renaming item
+            toastService.error({ title: 'Rename Failed', description: 'There was an error renaming the item.' });
             return false;
         }
     }
@@ -187,10 +185,9 @@ class DriveService {
             }
 
             await invalidateAll();
-            // toast : Item deleted successfully
             return true;
         } catch (err) {
-            // toast : Error deleting item
+            toastService.error({ title: 'Deletion Failed', description: 'There was an error deleting the item.' });
             return false;
         }
     }

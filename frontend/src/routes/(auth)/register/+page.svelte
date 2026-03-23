@@ -1,6 +1,29 @@
 <script>
     import { enhance } from '$app/forms';
     import { UserPlus } from '@lucide/svelte';
+    import { toastService } from '$lib/services/toastService.svelte';
+    import { goto } from '$app/navigation';
+
+    const handleRegister = () => {
+        return async ({ result }) => {
+            if (result.type === 'failure') {
+                toastService.create({
+                    title: 'Registration Error',
+                    description: result.data?.message,
+                    type: 'error'
+                });
+            }
+
+            if (result.type === 'redirect') {
+                toastService.success({
+                    title: 'Registration Successful',
+                    closable: false,
+                });
+                
+                await goto(result.location);
+            }
+        };
+    };
 </script>
 
 <div class="space-y-6">
@@ -9,7 +32,7 @@
         <p class="text-slate-400 text-sm">Create your secure vault in seconds.</p>
     </header>
 
-    <form use:enhance method="POST" action="?/register" class="flex flex-col gap-5 w-full">
+    <form use:enhance={handleRegister} method="POST" action="?/register" class="flex flex-col gap-5 w-full">
         <div class="space-y-3">
             <input name="username" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/10" type="text" placeholder="Username" required/>
             <input name="email" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-primary-500/50 focus:ring-4 focus:ring-primary-500/10" type="email" placeholder="Email" required/>

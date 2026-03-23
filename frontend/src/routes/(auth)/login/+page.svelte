@@ -1,7 +1,30 @@
 <script>
     import { enhance } from '$app/forms';
     import { LogIn } from '@lucide/svelte';
-    
+    import { toastService } from '$lib/services/toastService.svelte';
+    import { goto } from '$app/navigation';
+
+    const handleLogin = () => {
+        return async ({ result }) => {
+            if (result.type === 'failure') {
+                toastService.create({
+                    title: 'Login Error',
+                    description: result.data?.message,
+                    type: 'error'
+                });
+            }
+
+            if (result.type === 'redirect') {
+                toastService.success({
+                    title: 'Login Successful',
+                    closable: false,
+                });
+                
+                await goto(result.location);
+            }
+        };
+    };
+
 </script>
 
 <div class="space-y-6">
@@ -11,7 +34,7 @@
         <p class="text-slate-400 text-sm">Enter your details to access your drive.</p>
     </header>
 
-    <form use:enhance method="POST" action="?/login" class="flex flex-col gap-5 w-full">
+    <form use:enhance={handleLogin} method="POST" action="?/login" class="flex flex-col gap-5 w-full">
         <div class="space-y-4">
             <input 
                 name="username" 
