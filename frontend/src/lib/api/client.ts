@@ -1,8 +1,11 @@
 import createClient, { type Middleware } from 'openapi-fetch';
 import type { paths } from '$lib/api/openapi-generated-schema';
 import {PUBLIC_API_BASE_URL} from '$env/static/public';
+import { browser } from '$app/environment';
 
-const baseUrl = PUBLIC_API_BASE_URL?.replace(/\/+$/, '') ?? 'http://localhost:8000';
+const publicBaseUrl = PUBLIC_API_BASE_URL?.replace(/\/+$/, '') ?? 'http://localhost:8000';
+
+const baseUrl = !browser && publicBaseUrl.startsWith('/') ? 'http://backend:8000' : publicBaseUrl;
 
 const middleware: Middleware = {
 	async onRequest({ request }) {

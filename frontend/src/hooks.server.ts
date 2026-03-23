@@ -1,5 +1,5 @@
 import { error, type Handle } from '@sveltejs/kit';
-import { JWT_SECRET_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import jwt from 'jsonwebtoken';
 import {health} from '$lib/api/health';
 
@@ -23,9 +23,16 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	if (event.locals.is_logged_in) {
 		try {
+			const jwtSecret = env.JWT_SECRET_KEY;
+			if (!jwtSecret) {
+				event.cookies.delete('access_token', { path: '/' });
+				event.locals.is_logged_in = false;
+				return resolve(event);
+			}
+
 			const payload = jwt.verify(
 				event.cookies.get('access_token')!, 
-				JWT_SECRET_KEY!
+				jwtSecret
 			) as any;
 			event.locals.user = {
 				user_id: payload.user_id,

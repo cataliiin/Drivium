@@ -1,9 +1,15 @@
 import logging
 from typing import List
 import uuid
+from urllib.parse import urlsplit, urlunsplit
 from sqlalchemy.orm import Session
 from app.schemas.drive import *
-from app.core.config import MINIO_BUCKET_NAME, PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES, PRESIGNED_UPLOAD_URL_EXPIRES_MINUTES
+from app.core.config import (
+    MINIO_BUCKET_NAME,
+    MINIO_PUBLIC_PREFIX,
+    PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES,
+    PRESIGNED_UPLOAD_URL_EXPIRES_MINUTES,
+)
 from app.database.models import File, Folder, User
 from fastapi import HTTPException
 from minio import Minio
@@ -13,6 +19,17 @@ from datetime import datetime, timedelta, timezone
 class DriveService:
     def __init__(self):
         self.BUCKET_NAME = MINIO_BUCKET_NAME
+
+    def _to_public_storage_url(self, presigned_url: str) -> str:
+        prefix = MINIO_PUBLIC_PREFIX.strip()
+        if not prefix:
+            prefix = "/storage"
+        if not prefix.startswith("/"):
+            prefix = f"/{prefix}"
+        prefix = prefix.rstrip("/")
+
+        parsed = urlsplit(presigned_url)
+        return urlunsplit(("", "", f"{prefix}{parsed.path}", parsed.query, ""))
 
     def get_upload_url(self, file_data: FileUploadRequest, db: Session, minio: Minio, current_user: User) -> FileUploadResponse:
         if file_data.folder_id is not None:
@@ -52,7 +69,7 @@ class DriveService:
             
             return FileUploadResponse(
                 file_id=file_id,
-                presigned_url=presigned_url
+                presigned_url=self._to_public_storage_url(presigned_url)
             )
             
         except S3Error as e:
@@ -121,12 +138,13 @@ class DriveService:
         }
 
         try:
-            return minio.presigned_get_object(
+            url = minio.presigned_get_object(
                 bucket_name=self.BUCKET_NAME,
                 object_name=object_name,
                 expires=timedelta(minutes=PRESIGNED_DOWNLOAD_URL_EXPIRES_MINUTES),
                 response_headers=response_headers
             )
+            return self._to_public_storage_url(url)
         except S3Error:
             raise HTTPException(503, "Object storage unavailable")
         except Exception as e:

@@ -7,3 +7,5 @@ passlib[argon2]
 python-jose[cryptography]
 argon2-cffi
 minio
+psycopg2-binary
+email-validator
