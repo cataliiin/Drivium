@@ -3,7 +3,7 @@ import type { Actions } from '@sveltejs/kit';
 import {login} from '$lib/api/auth';
 
 export const actions: Actions = {
-	login: async ({ cookies, request }) => {
+	login: async ({ cookies, request, url }) => {
 		const data = await request.formData();
 		const username = data.get('username') as string;
 		const password = data.get('password') as string;
@@ -13,6 +13,7 @@ export const actions: Actions = {
 		}
 
 		let access_token: string;
+		const useSecureCookie = url.protocol === 'https:';
 
 		try {
 			const response = await login({ username, password });
@@ -24,7 +25,7 @@ export const actions: Actions = {
 		cookies.set('access_token', access_token, {
 			path: '/',
 			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
+			secure: useSecureCookie,
 			sameSite: 'lax',
 			maxAge: 60 * 60 * 24 * 7
 		});

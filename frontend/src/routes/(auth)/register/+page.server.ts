@@ -4,8 +4,9 @@ import { registerUser } from '$lib/api/users';
 import { login } from '$lib/api/auth';
 
 export const actions: Actions = {
-    register: async ({ cookies, request }) => {
+    register: async ({ cookies, request, url }) => {
         const data = await request.formData();
+        const useSecureCookie = url.protocol === 'https:';
         
         const username = data.get('username')?.toString();
         const email = data.get('email')?.toString();
@@ -36,7 +37,7 @@ export const actions: Actions = {
             cookies.set('access_token', authResponse.access_token, {
                 path: '/',
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: useSecureCookie,
                 sameSite: 'strict',
                 maxAge: 60 * 60 * 24 * 7
             });
