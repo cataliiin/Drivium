@@ -11,6 +11,16 @@ interface UploadItem {
     eta: string;
 }
 
+function createUploadId(): string {
+    if (typeof globalThis.crypto?.randomUUID === 'function') {
+        return globalThis.crypto.randomUUID();
+    }
+
+    const timePart = Date.now().toString(36);
+    const randomPart = Math.random().toString(36).slice(2, 12);
+    return `${timePart}-${randomPart}`;
+}
+
 class DriveService {
     uploadQueue = $state<UploadItem[]>([]);
     isUploading = $state(false);
@@ -21,7 +31,7 @@ class DriveService {
         const fileList = Array.from(files);
         
         const newItems: UploadItem[] = fileList.map(file => ({
-            id: crypto.randomUUID(),
+            id: createUploadId(),
             file,
             progress: 0,
             status: 'waiting',
