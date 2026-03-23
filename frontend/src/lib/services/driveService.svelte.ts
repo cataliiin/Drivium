@@ -64,8 +64,7 @@ class DriveService {
             this.uploadQueue = this.uploadQueue.filter(u => u.id !== nextItem.id);
             await invalidateAll();
         } catch (err) {
-            toastService.error({ title: 'Upload Failed', description: 'There was an error uploading your file. Please try again.' });
-            console.error("Upload error:", err);
+            toastService.error({ title: 'Upload Failed', description: err instanceof Error ? err.message : 'An error occurred during file upload.' });
 
             this.uploadQueue = this.uploadQueue.filter(u => u.id !== nextItem.id);
         }
@@ -129,7 +128,7 @@ class DriveService {
             
             return true;
         } catch (err: any) {
-            toastService.error({ title: 'Download Failed', description: 'There was an error downloading your file.' });
+            toastService.error({ title: 'Download Failed', description: err.message || 'An error occurred while trying to download the file.' });
             return false;
         }
     }
@@ -147,9 +146,12 @@ class DriveService {
 
             await invalidateAll();
             return true;
-        } catch (err) {
-            toastService.error({ title: 'Creation Failed', description: 'There was an error creating the folder.' });
-            return false;
+        } catch (err: any) {
+            const errorMessage = err.message || 'An unexpected error occurred';
+            toastService.error({ 
+                title: 'Creation Failed', 
+                description: errorMessage 
+            });
         }
     }
 
@@ -171,7 +173,7 @@ class DriveService {
             await invalidateAll();
             return true;
         } catch (err) {
-            toastService.error({ title: 'Rename Failed', description: 'There was an error renaming the item.' });
+            toastService.error({ title: 'Rename Failed', description: err instanceof Error ? err.message : 'An error occurred while trying to rename the item.' });
             return false;
         }
     }
@@ -187,7 +189,7 @@ class DriveService {
             await invalidateAll();
             return true;
         } catch (err) {
-            toastService.error({ title: 'Deletion Failed', description: 'There was an error deleting the item.' });
+            toastService.error({ title: 'Deletion Failed', description: err instanceof Error ? err.message : 'An error occurred while trying to delete the item.' });
             return false;
         }
     }

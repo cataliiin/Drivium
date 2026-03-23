@@ -23,14 +23,19 @@ const middleware: Middleware = {
 		let message = `${response.status} ${response.statusText}`;
 
 		try {
-			const data = await response.clone().json();
+            const data = await response.clone().json();
 
-			if (typeof data?.message === 'string') {
-				message = data.message;
-			} else if (typeof data?.detail === 'string') {
-				message = data.detail;
-			}
-		} catch {}
+            if (typeof data?.message === 'string') {
+                message = data.message;
+            } else if (typeof data?.detail === 'string') {
+                message = data.detail;
+            } else if (Array.isArray(data?.detail)) {
+                const firstError = data.detail[0];
+                const field = firstError.loc.at(-1); 
+                message = `${field}: ${firstError.msg}`;
+            }
+        } catch {
+        }
 
 		throw new Error(message);
 	},
