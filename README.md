@@ -1,8 +1,6 @@
 # Drivium
 
-[![Demo](https://img.shields.io/badge/Live%20Demo-134.209.255.19-blue.svg)](http://134.209.255.19/)
-[![FastAPI](https://img.shields.io/badge/API%20Docs-FastAPI-yellowgreen.svg)](http://134.209.255.19/docs)
-
+[![Demo](https://img.shields.io/badge/Live%20Demo-134.209.255.19-blue.svg)](http://drivium.cloud)
 A cloud drive application for managing files and folders.
 
 ## Live Demo
