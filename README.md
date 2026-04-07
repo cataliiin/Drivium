@@ -18,7 +18,7 @@ DigitalOcean Droplet + Docker + Nginx reverse proxy.
 - Auth: JWT (python-jose)
 - Database: PostgreSQL
 - Storage: MinIO (S3-compatible, presigned URLs)
-- Frontend: React, Vite, Bootstrap
+- Frontend: Svelte, Skeleton UI, Tailwind
 
 ## Implemented Features
 
