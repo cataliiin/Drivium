@@ -1,11 +1,20 @@
 <script>
     import Sidebar from "$lib/components/Sidebar.svelte";
+    import MobileDriveShell from "$lib/components/Mobile/DriveShell.svelte";
 
     let { children } = $props();
 </script>
 
-<Sidebar>
-    {@render children()}
-</Sidebar>
+<div class="hidden md:block">
+    <Sidebar>
+        {@render children()}
+    </Sidebar>
+</div>
+
+<div class="md:hidden">
+    <MobileDriveShell>
+        {@render children()}
+    </MobileDriveShell>
+</div>
 
 
