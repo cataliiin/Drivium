@@ -1,10 +1,5 @@
 # Drivium
 
-**🌐 Live Demo: [drivium.cloud](https://drivium.cloud)**
-
-> [!NOTE]
-> The demo runs on budget hosting — performance (upload/download speeds, response times) may not reflect what the stack can do on proper hardware.
-
 A self-hosted cloud storage application built with **FastAPI** and **SvelteKit 5**. Files are stored as objects in MinIO (S3-compatible), metadata and folder hierarchy are persisted in PostgreSQL, and the entire stack is orchestrated with Docker Compose behind an Nginx reverse proxy.
 
 ---
